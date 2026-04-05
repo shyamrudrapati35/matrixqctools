@@ -1,0 +1,32 @@
+* {
+    margin: 0;
+    padding: 0;
+    /*border: 1px solid black;*/
+    color: #213c51;
+}
+
+.main_page_layout {
+    height: 100dvh;
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-template-rows: repeat(12, 1fr);
+    grid-column-gap: 8px;
+    grid-row-gap: 8px;
+
+    /*dotted background*/
+    background-color: white;
+    background-image: radial-gradient(gray 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+.main_page {
+    grid-area: 2 / 1 / 12 / 13;
+    background-color: #f2eae0;
+    margin: 10px;
+    border-radius: 10px;
+    box-shadow: 2px 2px 2px #1b1f1b;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}

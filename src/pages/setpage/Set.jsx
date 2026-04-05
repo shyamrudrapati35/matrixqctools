@@ -1,0 +1,161 @@
+import "./style.css";
+import { useMemo, useState } from "react";
+import { addMeasurement } from "../../lib/indexedDb";
+
+export default function Set({ category }) {
+  const [sfo, setSfo] = useState("");
+  const [customer, setCustomer] = useState("");
+  const [width, setWidth] = useState(0);
+  const [height, setHeight] = useState(0);
+  const [saveStatus, setSaveStatus] = useState({ type: "idle", message: "" });
+
+  const diagonal = useMemo(() => {
+    const w = Number(width);
+    const h = Number(height);
+    if (!Number.isFinite(w) || !Number.isFinite(h)) return "";
+    if (w <= 0 || h <= 0) return "";
+    const d = Math.hypot(w, h);
+    return Number.isFinite(d) ? d.toFixed(2) : "";
+  }, [width, height]);
+
+  const onSave = async () => {
+    setSaveStatus({ type: "idle", message: "" });
+
+    const w = Number(width);
+    const h = Number(height);
+    if (!Number.isFinite(w) || !Number.isFinite(h) || w <= 0 || h <= 0) {
+      setSaveStatus({
+        type: "error",
+        message: "Enter valid width and height (> 0).",
+      });
+      return;
+    }
+
+    const d = Math.hypot(w, h);
+    const measurement = {
+      time: new Date().toISOString(),
+      sfo: sfo.trim(),
+      customer: customer.trim(),
+      width: w,
+      height: h,
+      diagonal: Number.isFinite(d) ? Math.round(d) : null,
+    };
+
+    try {
+      await addMeasurement(measurement, category);
+      setSaveStatus({ type: "success", message: "Saved to IndexedDB." });
+    } catch (err) {
+      setSaveStatus({
+        type: "error",
+        message: err instanceof Error ? err.message : "Save failed.",
+      });
+    }
+  };
+
+  return (
+    <>
+      <div className="set-page-root m3-form">
+        <div className="m3-outlined-text-field">
+          <input
+            id="field-sfo"
+            className="m3-outlined-text-field__input"
+            type="number"
+            placeholder=" "
+            value={sfo}
+            onChange={(e) => setSfo(e.target.value)}
+            autoComplete="off"
+          />
+          <label htmlFor="field-sfo" className="m3-outlined-text-field__label">
+            SFO
+          </label>
+        </div>
+        <div className="m3-outlined-text-field">
+          <input
+            id="field-customer"
+            className="m3-outlined-text-field__input"
+            type="text"
+            placeholder=" "
+            value={customer}
+            onChange={(e) => setCustomer(e.target.value)}
+            autoComplete="off"
+          />
+          <label
+            htmlFor="field-customer"
+            className="m3-outlined-text-field__label"
+          >
+            Customer
+          </label>
+        </div>
+        <div className="m3-outlined-text-field">
+          <input
+            id="field-width"
+            className="m3-outlined-text-field__input"
+            type="number"
+            placeholder=" "
+            inputMode="decimal"
+            value={width === 0 ? "" : width}
+            onChange={(e) => setWidth(Number(e.target.value) || 0)}
+          />
+          <label
+            htmlFor="field-width"
+            className="m3-outlined-text-field__label"
+          >
+            Width
+          </label>
+        </div>
+        <div className="m3-outlined-text-field">
+          <input
+            id="field-height"
+            className="m3-outlined-text-field__input"
+            type="number"
+            placeholder=" "
+            inputMode="decimal"
+            value={height === 0 ? "" : height}
+            onChange={(e) => setHeight(Number(e.target.value) || 0)}
+          />
+          <label
+            htmlFor="field-height"
+            className="m3-outlined-text-field__label"
+          >
+            Height
+          </label>
+        </div>
+        <div className="m3-outlined-text-field">
+          <input
+            id="field-diagonal"
+            className="m3-outlined-text-field__input m3-outlined-text-field__input--readonly"
+            type="number"
+            placeholder=" "
+            value={Math.round(diagonal) || ""}
+            readOnly
+            aria-readonly="true"
+            autoComplete="off"
+          />
+          <label
+            htmlFor="field-diagonal"
+            className="m3-outlined-text-field__label"
+          >
+            Diagonal
+          </label>
+        </div>
+        <div className="m3-actions">
+          <button
+            type="button"
+            className="m3-button m3-button--filled m3-button--full"
+            onClick={onSave}
+          >
+            Save
+          </button>
+          {saveStatus.message ? (
+            <div
+              className={`m3-status m3-status--${saveStatus.type}`}
+              role={saveStatus.type === "error" ? "alert" : "status"}
+            >
+              {saveStatus.message}
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </>
+  );
+}
