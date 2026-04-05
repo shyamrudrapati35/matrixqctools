@@ -1,15 +1,22 @@
 // import { useState } from "react";
 import "./App.css";
 import { Routes, Route, Navigate } from "react-router-dom";
-import Rg from "./pages/rgpage/Rg";
 import Save from "./pages/savepage/Save";
 import Navigation from "./components/navigation/Navigation";
 import Mainnav from "./components/main navigation/Mainnav";
 import Coming from "./pages/trail/Holder";
+
+//rgpage import
+import Rg from "./pages/rgpage/Rg";
+
+//waterepage import
 import Wtr from "./pages/wtrpage/Wtr";
 
 //tempering page import
 import Temp from "./pages/tempring/Temp";
+
+//dgu page import
+import Dgu from "./pages/dgupage/Dgu";
 
 function App() {
   // const [count, setCount] = useState(0);
@@ -26,7 +33,7 @@ function App() {
           <Route path="/rg/save" element={<Save category="rg" />} />
           <Route path="/temp/set" element={<Temp category="temp" />} />
           <Route path="/temp/save" element={<Save category="temp" />} />
-          <Route path="/dgu/set" element={<Coming category="dgu" />} />
+          <Route path="/dgu/set" element={<Dgu category="dgu" />} />
           <Route path="/dgu/save" element={<Save category="dgu" />} />
         </Routes>
       </div>
