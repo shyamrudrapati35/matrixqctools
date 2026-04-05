@@ -26,12 +26,100 @@ function sortOldestFirst(items) {
   });
 }
 
-function formatCardData(m) {
-  return `SFO: ${m.sfo || "—"}
+function formatCardData(m, category) {
+  if (category === "temp") {
+    return `SFO: ${m.sfo || "—"}
+
 Customer: ${m.customer || "—"}
+
+Project: ${m.project || "—"}
+
+Width: ${m.width || "—"}
+
+Height: ${m.height || "—"}
+
+Spec: ${m.spec || "—"}
+
+Zebra: ${m.zebra || "—"}
+
+Rollerwave: ${m.rollerwave || "—"}
+
+Edge Lift: ${m.edgeLift || "—"}
+
+Overall Bow: ${m.overallBow || "—"}
+
+Fragmentation: ${m.fragmentation || "—"}
+
+Stress: ${m.stress || "—"}
+
+Handover To: ${m.handoverTo || "—"}
+
+Operator: ${m.operator || "—"}`;
+  }
+  // Default RG format
+  return `SFO: ${m.sfo || "—"}
+
+Customer: ${m.customer || "—"}
+
 Width: ${m.width} mm
+
 Height: ${m.height} mm
+
 Diagonal: ${m.diagonal != null ? Math.round(m.diagonal * 100) / 100 + " mm" : "—"}`;
+}
+
+function renderCardRows(m, category) {
+  if (category === "temp") {
+    return (
+      <>
+        <span className="m3-card__label">SFO</span>
+        <span className="m3-card__value">{m.sfo || "—"}</span>
+        <span className="m3-card__label">Customer</span>
+        <span className="m3-card__value">{m.customer || "—"}</span>
+        <span className="m3-card__label">Project</span>
+        <span className="m3-card__value">{m.project || "—"}</span>
+        <span className="m3-card__label">Width</span>
+        <span className="m3-card__value">{m.width || "—"}</span>
+        <span className="m3-card__label">Height</span>
+        <span className="m3-card__value">{m.height || "—"}</span>
+        <span className="m3-card__label">Spec</span>
+        <span className="m3-card__value">{m.spec || "—"}</span>
+        <span className="m3-card__label">Zebra</span>
+        <span className="m3-card__value">{m.zebra || "—"}</span>
+        <span className="m3-card__label">Rollerwave</span>
+        <span className="m3-card__value">{m.rollerwave || "—"}</span>
+        <span className="m3-card__label">Edge Lift</span>
+        <span className="m3-card__value">{m.edgeLift || "—"}</span>
+        <span className="m3-card__label">Overall Bow</span>
+        <span className="m3-card__value">{m.overallBow || "—"}</span>
+        <span className="m3-card__label">Fragmentation</span>
+        <span className="m3-card__value">{m.fragmentation || "—"}</span>
+        <span className="m3-card__label">Stress</span>
+        <span className="m3-card__value">{m.stress || "—"}</span>
+        <span className="m3-card__label">Handover To</span>
+        <span className="m3-card__value">{m.handoverTo || "—"}</span>
+        <span className="m3-card__label">Operator</span>
+        <span className="m3-card__value">{m.operator || "—"}</span>
+      </>
+    );
+  }
+  // Default RG format
+  return (
+    <>
+      <span className="m3-card__label">SFO</span>
+      <span className="m3-card__value">{m.sfo || "—"}</span>
+      <span className="m3-card__label">Customer</span>
+      <span className="m3-card__value">{m.customer || "—"}</span>
+      <span className="m3-card__label">Width</span>
+      <span className="m3-card__value">{m.width}</span>
+      <span className="m3-card__label">Height</span>
+      <span className="m3-card__value">{m.height}</span>
+      <span className="m3-card__label">Diagonal</span>
+      <span className="m3-card__value">
+        {m.diagonal != null ? m.diagonal : "—"}
+      </span>
+    </>
+  );
 }
 
 export default function Save({ category }) {
@@ -173,7 +261,7 @@ export default function Save({ category }) {
                 <button
                   type="button"
                   className="m3-card__copy-btn"
-                  onClick={() => copyToClipboard(formatCardData(m))}
+                  onClick={() => copyToClipboard(formatCardData(m, category))}
                   title="Copy to clipboard"
                   aria-label="Copy measurement data to clipboard"
                 >
@@ -183,18 +271,7 @@ export default function Save({ category }) {
                 </button>
               </div>
               <div className="m3-card__rows">
-                <span className="m3-card__label">SFO</span>
-                <span className="m3-card__value">{m.sfo || "—"}</span>
-                <span className="m3-card__label">Customer</span>
-                <span className="m3-card__value">{m.customer || "—"}</span>
-                <span className="m3-card__label">Width</span>
-                <span className="m3-card__value">{m.width}</span>
-                <span className="m3-card__label">Height</span>
-                <span className="m3-card__value">{m.height}</span>
-                <span className="m3-card__label">Diagonal</span>
-                <span className="m3-card__value">
-                  {m.diagonal != null ? m.diagonal : "—"}
-                </span>
+                {renderCardRows(m, category)}
               </div>
             </li>
           ))}
