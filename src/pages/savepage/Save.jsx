@@ -82,10 +82,14 @@ Make: ${m.make || "—"}
 
 Delta T: ${m.deltaT || "—"}`;
   }
-  // Default RG format
+  // Default RG / CP format
   return `SFO: ${m.sfo || "—"}
 
 Customer: ${m.customer || "—"}
+
+Glass Type: ${m.glassType || "—"}
+
+Glass thickness: ${m.glassThickness != null ? m.glassThickness + " mm" : "—"}
 
 Width: ${m.width} mm
 
@@ -167,6 +171,10 @@ function renderCardRows(m, category) {
       <span className="m3-card__value">{m.sfo || "—"}</span>
       <span className="m3-card__label">Customer</span>
       <span className="m3-card__value">{m.customer || "—"}</span>
+      <span className="m3-card__label">Glass Type</span>
+      <span className="m3-card__value">{m.glassType || "—"}</span>
+      <span className="m3-card__label">Glass thickness</span>
+      <span className="m3-card__value">{m.glassThickness != null ? `${m.glassThickness} mm` : "—"}</span>
       <span className="m3-card__label">Width</span>
       <span className="m3-card__value">{m.width}</span>
       <span className="m3-card__label">Height</span>

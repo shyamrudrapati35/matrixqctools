@@ -218,6 +218,12 @@ export default function Dgu({ category }) {
           </select>
         </div>
 
+        <div>
+          <br />
+          <p>1st Glass</p>
+          <br />
+        </div>
+
         <div className="m3-outlined-text-field">
           <input
             id="field-first-glass"
@@ -261,6 +267,12 @@ export default function Dgu({ category }) {
           <label htmlFor="field-bite" className="m3-outlined-text-field__label">
             Bite (mm)
           </label>
+        </div>
+
+        <div>
+          <br />
+          <p>2nd Glass</p>
+          <br />
         </div>
 
         <div className="m3-outlined-text-field">

@@ -5,6 +5,11 @@ import { addMeasurement } from "../../lib/indexedDb";
 export default function Set({ category }) {
   const [sfo, setSfo] = useState("");
   const [customer, setCustomer] = useState("");
+  const [glassType, setGlassType] = useState("");
+  const [glassThickness, setGlassThickness] = useState(4);
+  const [glassCategory, setGlassCategory] = useState(
+    category?.trim().toLowerCase() === "cp" ? "cp" : "rg"
+  );
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
   const [saveStatus, setSaveStatus] = useState({ type: "idle", message: "" });
@@ -23,6 +28,7 @@ export default function Set({ category }) {
 
     const w = Number(width);
     const h = Number(height);
+    const t = Number(glassThickness);
     if (!Number.isFinite(w) || !Number.isFinite(h) || w <= 0 || h <= 0) {
       setSaveStatus({
         type: "error",
@@ -31,18 +37,29 @@ export default function Set({ category }) {
       return;
     }
 
+    if (!Number.isFinite(t) || t <= 0) {
+      setSaveStatus({
+        type: "error",
+        message: "Enter valid glass thickness (> 0).",
+      });
+      return;
+    }
+
     const d = Math.hypot(w, h);
+    const selectedCategory = glassCategory || category || "rg";
     const measurement = {
       time: new Date().toISOString(),
       sfo: sfo.trim(),
       customer: customer.trim(),
+      glassType: glassType.trim(),
+      glassThickness: Number.isFinite(t) ? t : null,
       width: w,
       height: h,
       diagonal: Number.isFinite(d) ? Math.round(d) : null,
     };
 
     try {
-      await addMeasurement(measurement, category);
+      await addMeasurement(measurement, selectedCategory);
       setSaveStatus({ type: "success", message: "Saved to IndexedDB." });
     } catch (err) {
       setSaveStatus({
@@ -84,6 +101,60 @@ export default function Set({ category }) {
             className="m3-outlined-text-field__label"
           >
             Customer
+          </label>
+        </div>
+        <div className="m3-outlined-text-field">
+          <select
+            id="field-panel-category"
+            className="m3-outlined-text-field__input"
+            value={glassCategory}
+            onChange={(e) => setGlassCategory(e.target.value)}
+          >
+            <option value="rg">RG</option>
+            <option value="cp">CP</option>
+          </select>
+          <label
+            htmlFor="field-panel-category"
+            className="m3-outlined-text-field__label"
+          >
+            RG / CP
+          </label>
+        </div>
+        <div className="m3-outlined-text-field">
+          <input
+            id="field-glass-type"
+            className="m3-outlined-text-field__input"
+            type="text"
+            placeholder=" "
+            value={glassType}
+            onChange={(e) => setGlassType(e.target.value)}
+            autoComplete="off"
+          />
+          <label
+            htmlFor="field-glass-type"
+            className="m3-outlined-text-field__label"
+          >
+            Glass type
+          </label>
+        </div>
+        <div className="m3-outlined-text-field">
+          <select
+            id="field-glass-thickness"
+            className="m3-outlined-text-field__input"
+            value={glassThickness}
+            onChange={(e) => setGlassThickness(Number(e.target.value))}
+          >
+            {[4, 5, 6, 8, 10, 12, 15, 19].map((value) => (
+              <option key={value} value={value}>
+                {value} mm
+              </option>
+            ))}
+          </select>
+          <label
+            htmlFor="field-glass-thickness"
+            className="m3-outlined-text-field__label"
+          >
+            Glass thickness
           </label>
         </div>
         <div className="m3-outlined-text-field">
