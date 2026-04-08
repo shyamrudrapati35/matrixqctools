@@ -1,15 +1,32 @@
 .mainnav{
     grid-area: 1 / 2 / 2 / 12;
-    background-color: #5D688A;
+    background-color: #4A90E2;
     display: flex;
     justify-content: space-evenly;
     align-items: center;
-    margin: 6px;
-    border-radius: 10px;
-    color: #F2EAE0;
+    margin: 10px;
+    border-radius: 6px;
+    color: #FFFFFF;
+}
+
+.mainnav a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.mainnav a:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.mainnav img {
+    width: 20px;
+    height: 20px;
 }
 
 .active{
-    padding-bottom: 3px;
-    border-bottom: 2px solid #F2EAE0;
+    background-color: rgba(255, 255, 255, 0.3);
 }

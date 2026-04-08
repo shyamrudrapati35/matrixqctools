@@ -4,6 +4,7 @@ import water from '../../assets/main_nav/water.svg';
 import rg from '../../assets/main_nav/cutting.svg';
 import temp from '../../assets/main_nav/temp.svg';
 import dgu from '../../assets/main_nav/igu.svg';
+// import igu from '../../assets/main_nav/igu_2.svg';
 
 function Mainnav() {
     return (
