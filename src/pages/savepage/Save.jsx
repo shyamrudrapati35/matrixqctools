@@ -97,7 +97,7 @@ Delta T: ${m.deltaT || "—"}
 
 Base (batch no): ${m.base || "—"}
 
-Catlist (batch no): ${m.catlist || "—"}`;
+Catalist (batch no): ${m.catlist || "—"}`;
   }
   // Default RG / CP format
   return `SFO: ${m.sfo || "—"}
