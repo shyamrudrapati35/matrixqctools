@@ -1,5 +1,6 @@
 import "./style.css";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { clearAllMeasurements, listMeasurements } from "../../lib/indexedDb";
 
 function formatTime12hr(isoString) {
@@ -28,7 +29,7 @@ function sortOldestFirst(items) {
 
 function formatCardData(m, category) {
   if (category === "temp") {
-    return `SFO: ${m.sfo || "—"}
+    let tempData = `SFO: ${m.sfo || "—"}
 
 Customer: ${m.customer || "—"}
 
@@ -46,15 +47,27 @@ Rollerwave: ${m.rollerwave || "—"}
 
 Edge Lift: ${m.edgeLift || "—"}
 
-Overall Bow: ${m.overallBow || "—"}
+Overall Bow: ${m.overallBow || "—"}`;
 
-Fragmentation: ${m.fragmentation || "—"}
+    if (m.fragmentation && m.fragmentation !== "—") {
+      tempData += `
 
-Stress: ${m.stress || "—"}
+Fragmentation: ${m.fragmentation}`;
+    }
+
+    if (m.stress && m.stress !== "—") {
+      tempData += `
+
+Stress: ${m.stress}`;
+    }
+
+    tempData += `
 
 Handover To: ${m.handoverTo || "—"}
 
 Operator: ${m.operator || "—"}`;
+
+    return tempData;
   } else if (category === "dgu") {
     return `SFO: ${m.sfo || "—"}
 
@@ -80,7 +93,11 @@ Total Bite: ${m.totalBite || "—"}
 
 Make: ${m.make || "—"}
 
-Delta T: ${m.deltaT || "—"}`;
+Delta T: ${m.deltaT || "—"}
+
+Base (batch no): ${m.base || "—"}
+
+Catlist (batch no): ${m.catlist || "—"}`;
   }
   // Default RG / CP format
   return `SFO: ${m.sfo || "—"}
@@ -161,6 +178,10 @@ function renderCardRows(m, category) {
         <span className="m3-card__value">{m.make || "—"}</span>
         <span className="m3-card__label">Delta T</span>
         <span className="m3-card__value">{m.deltaT || "—"}</span>
+        <span className="m3-card__label">Base (batch no)</span>
+        <span className="m3-card__value">{m.base || "—"}</span>
+        <span className="m3-card__label">Catlist (batch no)</span>
+        <span className="m3-card__value">{m.catlist || "—"}</span>
       </>
     );
   }
@@ -188,11 +209,17 @@ function renderCardRows(m, category) {
 }
 
 export default function Save({ category }) {
+  const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
+
+  function onLoadMeasurement(measurement) {
+    localStorage.setItem(`${category}-load-data`, JSON.stringify(measurement));
+    navigate(`/${category}/set`);
+  }
 
   function copyToClipboard(text) {
     // Try modern Clipboard API first
@@ -323,17 +350,28 @@ export default function Save({ category }) {
             <li key={m.id} className="m3-card">
               <div className="m3-card__header">
                 <p className="m3-card__time">{formatTime12hr(m.time)}</p>
-                <button
-                  type="button"
-                  className="m3-card__copy-btn"
-                  onClick={() => copyToClipboard(formatCardData(m, category))}
-                  title="Copy to clipboard"
-                  aria-label="Copy measurement data to clipboard"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1ZM19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z" fill="currentColor"/>
-                  </svg>
-                </button>
+                <div className="m3-card__actions">
+                  <button
+                    type="button"
+                    className="m3-card__load-btn"
+                    onClick={() => onLoadMeasurement(m)}
+                    title="Load this measurement into the form"
+                    aria-label="Load measurement data"
+                  >
+                    Load
+                  </button>
+                  <button
+                    type="button"
+                    className="m3-card__copy-btn"
+                    onClick={() => copyToClipboard(formatCardData(m, category))}
+                    title="Copy to clipboard"
+                    aria-label="Copy measurement data to clipboard"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1ZM19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z" fill="currentColor"/>
+                    </svg>
+                  </button>
+                </div>
               </div>
               <div className="m3-card__rows">
                 {renderCardRows(m, category)}

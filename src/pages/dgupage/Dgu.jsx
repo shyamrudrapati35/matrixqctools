@@ -36,7 +36,48 @@ export default function Dgu({ category }) {
   const [totalBite, setTotalBite] = useState(() => draft?.totalBite ?? "");
   const [make, setMake] = useState(() => draft?.make ?? "Silinde MF 882");
   const [deltaT, setDeltaT] = useState(() => draft?.deltaT ?? "");
+  const [base, setBase] = useState(() => draft?.base ?? "");
+  const [catlist, setCatlist] = useState(() => draft?.catlist ?? "");
   const [saveStatus, setSaveStatus] = useState({ type: "idle", message: "" });
+
+  // Load measurement data from save page
+  useEffect(() => {
+    const loadDataKey = `${category}-load-data`;
+    const loadedData = localStorage.getItem(loadDataKey);
+    
+    if (loadedData) {
+      try {
+        const data = JSON.parse(loadedData);
+        
+        setSfo(data.sfo || "");
+        setCustomer(data.customer || "");
+        setProject(data.project || "");
+        setGlassType(data.glassType || "DGU");
+        setFirstGlass(data.firstGlass || "");
+        setSpacerThickness(data.spacerThickness || "");
+        setBite(data.bite || "");
+        setSecondGlass(data.secondGlass || "");
+        setInterlayerType(data.interlayerType || "");
+        setInterlayerThickness(data.interlayerThickness || "");
+        setThirdGlass(data.thirdGlass || "");
+        setWidth(data.width ?? 0);
+        setHeight(data.height ?? 0);
+        setEdgeDeletion(data.edgeDeletion || "");
+        setParallelism(data.parallelism || "");
+        setMeasuredSiliconeBite(data.measuredSiliconeBite || "");
+        setTotalBite(data.totalBite || "");
+        setMake(data.make || "Silinde MF 882");
+        setDeltaT(data.deltaT || "");
+        setBase(data.base || "");
+        setCatlist(data.catlist || "");
+        
+        // Clear the load data so it doesn't reload on next visit
+        localStorage.removeItem(loadDataKey);
+      } catch (err) {
+        console.error("Failed to load measurement data:", err);
+      }
+    }
+  }, [category]);
 
   useEffect(() => {
     const draft = {
@@ -59,10 +100,12 @@ export default function Dgu({ category }) {
       totalBite,
       make,
       deltaT,
+      base,
+      catlist,
     };
 
     localStorage.setItem(draftKey, JSON.stringify(draft));
-  }, [draftKey, sfo, customer, project, glassType, firstGlass, spacerThickness, bite, secondGlass, interlayerType, interlayerThickness, thirdGlass, width, height, edgeDeletion, parallelism, measuredSiliconeBite, totalBite, make, deltaT]);
+  }, [draftKey, sfo, customer, project, glassType, firstGlass, spacerThickness, bite, secondGlass, interlayerType, interlayerThickness, thirdGlass, width, height, edgeDeletion, parallelism, measuredSiliconeBite, totalBite, make, deltaT, base, catlist]);
 
   const onSave = async () => {
     setSaveStatus({ type: "idle", message: "" });
@@ -124,6 +167,8 @@ export default function Dgu({ category }) {
       totalBite: `${totalBite.trim()} mm`,
       make,
       deltaT: `${deltaT.trim()} °C`,
+      base: base.trim(),
+      catlist: catlist.trim(),
     };
 
     try {
@@ -148,7 +193,6 @@ export default function Dgu({ category }) {
       setMeasuredSiliconeBite("");
       setTotalBite("");
       setMake("Silinde MF 882");
-      setDeltaT("");
       localStorage.removeItem(draftKey);
     } catch (err) {
       setSaveStatus({
@@ -218,12 +262,6 @@ export default function Dgu({ category }) {
           </select>
         </div>
 
-        <div>
-          <br />
-          <p>1st Glass</p>
-          <br />
-        </div>
-
         <div className="m3-outlined-text-field">
           <input
             id="field-first-glass"
@@ -267,12 +305,6 @@ export default function Dgu({ category }) {
           <label htmlFor="field-bite" className="m3-outlined-text-field__label">
             Bite (mm)
           </label>
-        </div>
-
-        <div>
-          <br />
-          <p>2nd Glass</p>
-          <br />
         </div>
 
         <div className="m3-outlined-text-field">
@@ -453,6 +485,36 @@ export default function Dgu({ category }) {
           />
           <label htmlFor="field-delta-t" className="m3-outlined-text-field__label">
             Delta T (°C)
+          </label>
+        </div>
+
+        <div className="m3-outlined-text-field">
+          <input
+            id="field-base"
+            className="m3-outlined-text-field__input"
+            type="text"
+            placeholder=" "
+            value={base}
+            onChange={(e) => setBase(e.target.value)}
+            autoComplete="off"
+          />
+          <label htmlFor="field-base" className="m3-outlined-text-field__label">
+            Base (batch no)
+          </label>
+        </div>
+
+        <div className="m3-outlined-text-field">
+          <input
+            id="field-catlist"
+            className="m3-outlined-text-field__input"
+            type="text"
+            placeholder=" "
+            value={catlist}
+            onChange={(e) => setCatlist(e.target.value)}
+            autoComplete="off"
+          />
+          <label htmlFor="field-catlist" className="m3-outlined-text-field__label">
+            Catlist (batch no)
           </label>
         </div>
 

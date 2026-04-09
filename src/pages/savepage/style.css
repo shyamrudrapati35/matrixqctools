@@ -158,6 +158,42 @@
   margin-bottom: 12px;
 }
 
+.m3-card__actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.m3-card__load-btn {
+  font-family: inherit;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: var(--md-sys-shape-corner-extra-small);
+  border: 1px solid var(--md-sys-color-outline);
+  background: transparent;
+  color: var(--md-sys-color-primary);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.00857em;
+  line-height: 1;
+  transition:
+    background-color 0.2s var(--md-sys-motion-easing-emphasized),
+    box-shadow 0.2s var(--md-sys-motion-easing-emphasized);
+}
+
+.m3-card__load-btn:hover {
+  background-color: color-mix(in srgb, var(--md-sys-color-primary) 8%, transparent);
+}
+
+.m3-card__load-btn:focus {
+  outline: none;
+}
+
+.m3-card__load-btn:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--md-sys-color-primary) 35%, transparent);
+}
+
 .m3-card__copy-btn {
   background: none;
   border: none;
