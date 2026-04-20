@@ -1,17 +1,31 @@
 import "./style.css";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { addMeasurement } from "../../lib/indexedDb";
 
 export default function Set({ category }) {
-  const [sfo, setSfo] = useState("");
-  const [customer, setCustomer] = useState("");
-  const [glassType, setGlassType] = useState("");
-  const [glassThickness, setGlassThickness] = useState(4);
+  const draftKey = `rg-form-draft-${category || "rg"}`;
+  const loadDraft = () => {
+    if (typeof window === "undefined") return null;
+
+    try {
+      const storedValue = localStorage.getItem(draftKey);
+      return storedValue ? JSON.parse(storedValue) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const draft = loadDraft();
+
+  const [sfo, setSfo] = useState(() => draft?.sfo ?? "");
+  const [customer, setCustomer] = useState(() => draft?.customer ?? "");
+  const [glassType, setGlassType] = useState(() => draft?.glassType ?? "");
+  const [glassThickness, setGlassThickness] = useState(() => draft?.glassThickness ?? 4);
   const [glassCategory, setGlassCategory] = useState(
-    category?.trim().toLowerCase() === "cp" ? "cp" : "rg"
+    () => draft?.glassCategory ?? (category?.trim().toLowerCase() === "cp" ? "cp" : "rg")
   );
-  const [width, setWidth] = useState(0);
-  const [height, setHeight] = useState(0);
+  const [width, setWidth] = useState(() => draft?.width ?? 0);
+  const [height, setHeight] = useState(() => draft?.height ?? 0);
   const [saveStatus, setSaveStatus] = useState({ type: "idle", message: "" });
 
   const diagonal = useMemo(() => {
@@ -22,6 +36,20 @@ export default function Set({ category }) {
     const d = Math.hypot(w, h);
     return Number.isFinite(d) ? d.toFixed(2) : "";
   }, [width, height]);
+
+  useEffect(() => {
+    const draftData = {
+      sfo,
+      customer,
+      glassType,
+      glassThickness,
+      glassCategory,
+      width,
+      height,
+    };
+
+    localStorage.setItem(draftKey, JSON.stringify(draftData));
+  }, [draftKey, sfo, customer, glassType, glassThickness, glassCategory, width, height]);
 
   const onSave = async () => {
     setSaveStatus({ type: "idle", message: "" });
@@ -53,6 +81,7 @@ export default function Set({ category }) {
       customer: customer.trim(),
       glassType: glassType.trim(),
       glassThickness: Number.isFinite(t) ? t : null,
+      glassCategory: selectedCategory,
       width: w,
       height: h,
       diagonal: Number.isFinite(d) ? Math.round(d) : null,
@@ -61,6 +90,7 @@ export default function Set({ category }) {
     try {
       await addMeasurement(measurement, selectedCategory);
       setSaveStatus({ type: "success", message: "Saved to IndexedDB." });
+      localStorage.setItem(draftKey, JSON.stringify(measurement));
     } catch (err) {
       setSaveStatus({
         type: "error",

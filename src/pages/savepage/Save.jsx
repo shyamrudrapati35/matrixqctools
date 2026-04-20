@@ -208,6 +208,21 @@ function renderCardRows(m, category) {
   );
 }
 
+function getDraftStorageKey(category) {
+  const normalizedCategory = (category || "").trim().toLowerCase();
+  switch (normalizedCategory) {
+    case "temp":
+      return `temp-form-draft-${normalizedCategory || "temp"}`;
+    case "dgu":
+      return `dgu-form-draft-${normalizedCategory || "dgu"}`;
+    case "rg":
+    case "cp":
+      return `rg-form-draft-${normalizedCategory || "rg"}`;
+    default:
+      return `${normalizedCategory || "form"}-form-draft-${normalizedCategory || "default"}`;
+  }
+}
+
 export default function Save({ category }) {
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
@@ -217,6 +232,8 @@ export default function Save({ category }) {
   const [copySuccess, setCopySuccess] = useState(false);
 
   function onLoadMeasurement(measurement) {
+    const draftKey = getDraftStorageKey(category);
+    localStorage.setItem(draftKey, JSON.stringify(measurement));
     localStorage.setItem(`${category}-load-data`, JSON.stringify(measurement));
     navigate(`/${category}/set`);
   }

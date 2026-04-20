@@ -4,6 +4,7 @@ import { addMeasurement } from "../../lib/indexedDb";
 
 export default function Dgu({ category }) {
   const draftKey = `dgu-form-draft-${category || "dgu"}`;
+  const normalizeGlassType = (value) => (value || "").toUpperCase();
   const loadDraft = () => {
     if (typeof window === "undefined") return null;
 
@@ -30,15 +31,16 @@ export default function Dgu({ category }) {
   const [thirdGlass, setThirdGlass] = useState(() => draft?.thirdGlass ?? "");
   const [width, setWidth] = useState(() => draft?.width ?? 0);
   const [height, setHeight] = useState(() => draft?.height ?? 0);
-  const [edgeDeletion, setEdgeDeletion] = useState(() => draft?.edgeDeletion ?? "");
-  const [parallelism, setParallelism] = useState(() => draft?.parallelism ?? "");
-  const [measuredSiliconeBite, setMeasuredSiliconeBite] = useState(() => draft?.measuredSiliconeBite ?? "");
-  const [totalBite, setTotalBite] = useState(() => draft?.totalBite ?? "");
+  const [edgeDeletion, setEdgeDeletion] = useState(() => draft?.edgeDeletionInput ?? draft?.edgeDeletion ?? "");
+  const [parallelism, setParallelism] = useState(() => draft?.parallelismInput ?? draft?.parallelism ?? "");
+  const [measuredSiliconeBite, setMeasuredSiliconeBite] = useState(() => draft?.measuredSiliconeBiteInput ?? draft?.measuredSiliconeBite ?? "");
+  const [totalBite, setTotalBite] = useState(() => draft?.totalBiteInput ?? draft?.totalBite ?? "");
   const [make, setMake] = useState(() => draft?.make ?? "Silinde MF 882");
-  const [deltaT, setDeltaT] = useState(() => draft?.deltaT ?? "");
+  const [deltaT, setDeltaT] = useState(() => draft?.deltaTInput ?? draft?.deltaT ?? "");
   const [base, setBase] = useState(() => draft?.base ?? "");
   const [catlist, setCatlist] = useState(() => draft?.catlist ?? "");
   const [saveStatus, setSaveStatus] = useState({ type: "idle", message: "" });
+  const isLamiDgu = normalizeGlassType(glassType) === "LAMI+DGU";
 
   // Load measurement data from save page
   useEffect(() => {
@@ -51,7 +53,7 @@ export default function Dgu({ category }) {
         
         setSfo(data.sfo || "");
         setCustomer(data.customer || "");
-        setProject(data.project || "");
+        setProject(data.project && data.project !== "â€”" ? data.project : "");
         setGlassType(data.glassType || "DGU");
         setFirstGlass(data.firstGlass || "");
         setSpacerThickness(data.spacerThickness || "");
@@ -60,21 +62,21 @@ export default function Dgu({ category }) {
         setInterlayerType(data.interlayerType || "");
         setInterlayerThickness(data.interlayerThickness || "");
         setThirdGlass(data.thirdGlass || "");
-        setWidth(data.width ?? 0);
-        setHeight(data.height ?? 0);
-        setEdgeDeletion(data.edgeDeletion || "");
-        setParallelism(data.parallelism || "");
-        setMeasuredSiliconeBite(data.measuredSiliconeBite || "");
-        setTotalBite(data.totalBite || "");
+        setWidth(Number(data.width) || 0);
+        setHeight(Number(data.height) || 0);
+        setEdgeDeletion(data.edgeDeletionInput || data.edgeDeletion || "");
+        setParallelism(data.parallelismInput || data.parallelism || "");
+        setMeasuredSiliconeBite(data.measuredSiliconeBiteInput || data.measuredSiliconeBite || "");
+        setTotalBite(data.totalBiteInput || data.totalBite || "");
         setMake(data.make || "Silinde MF 882");
-        setDeltaT(data.deltaT || "");
+        setDeltaT(data.deltaTInput || data.deltaT || "");
         setBase(data.base || "");
         setCatlist(data.catlist || "");
         
-        // Clear the load data so it doesn't reload on next visit
-        localStorage.removeItem(loadDataKey);
       } catch (err) {
         console.error("Failed to load measurement data:", err);
+      } finally {
+        localStorage.removeItem(loadDataKey);
       }
     }
   }, [category]);
@@ -126,7 +128,7 @@ export default function Dgu({ category }) {
       deltaT: deltaT.trim(),
     };
 
-    if (glassType === "Lami+DGU") {
+    if (isLamiDgu) {
       requiredFields.interlayerType = interlayerType.trim();
       requiredFields.interlayerThickness = interlayerThickness.trim();
       requiredFields.thirdGlass = thirdGlass.trim();
@@ -146,9 +148,9 @@ export default function Dgu({ category }) {
 
     // Format glass spec
     let spec = "";
-    if (glassType === "DGU") {
+    if (normalizeGlassType(glassType) === "DGU") {
       spec = `${firstGlass} +${spacerThickness}mm Airgap With ${bite}mm Bite + ${secondGlass}`;
-    } else if (glassType === "Lami+DGU") {
+    } else if (isLamiDgu) {
       spec = `${firstGlass} + ${spacerThickness}mm Airgap With ${bite}mm Bite + ${secondGlass} + ${interlayerThickness} ${interlayerType} + ${thirdGlass}`;
     }
 
@@ -158,15 +160,27 @@ export default function Dgu({ category }) {
       customer: customer.trim(),
       project: project.trim() ? project.trim() : "—",
       glassType,
+      firstGlass: firstGlass.trim(),
+      spacerThickness: spacerThickness.trim(),
+      bite: bite.trim(),
+      secondGlass: secondGlass.trim(),
+      interlayerType: interlayerType.trim(),
+      interlayerThickness: interlayerThickness.trim(),
+      thirdGlass: thirdGlass.trim(),
       spec,
-      width: `${Number(width)} mm`,
-      height: `${Number(height)} mm`,
+      width: Number(width) || 0,
+      height: Number(height) || 0,
+      edgeDeletionInput: edgeDeletion.trim(),
+      parallelismInput: parallelism.trim(),
+      measuredSiliconeBiteInput: measuredSiliconeBite.trim(),
+      totalBiteInput: totalBite.trim(),
       edgeDeletion: edgeDeletion.trim() ? `${edgeDeletion.trim()} mm` : "—",
       parallelism: `${parallelism.trim()} mm`,
       measuredSiliconeBite: `${measuredSiliconeBite.trim()} mm`,
       totalBite: `${totalBite.trim()} mm`,
       make,
       deltaT: `${deltaT.trim()} °C`,
+      deltaTInput: deltaT.trim(),
       base: base.trim(),
       catlist: catlist.trim(),
     };
@@ -254,7 +268,7 @@ export default function Dgu({ category }) {
           <label className="m3-select-label">Glass Type</label>
           <select
             value={glassType}
-            onChange={(e) => setGlassType(e.target.value.toUpperCase())}
+            onChange={(e) => setGlassType(e.target.value)}
             className="m3-select-field"
           >
             <option value="DGU">DGU</option>
@@ -322,7 +336,7 @@ export default function Dgu({ category }) {
           </label>
         </div>
 
-        {glassType === "Lami+DGU" && (
+        {isLamiDgu && (
           <>
             <div className="m3-outlined-text-field">
               <input

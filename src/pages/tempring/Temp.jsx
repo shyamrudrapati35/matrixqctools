@@ -27,17 +27,50 @@ export default function Temp({ category }) {
   const [glassTemp, setGlassTemp] = useState(() => draft?.glassTemp ?? "HS");
   const [glassProcessing, setGlassProcessing] = useState(() => draft?.glassProcessing ?? "RG");
   const [zebra, setZebra] = useState(() => draft?.zebra ?? "OK");
-  const [rollerwave, setRollerwave] = useState(() => draft?.rollerwave ?? "");
-  const [edgeLift, setEdgeLift] = useState(() => draft?.edgeLift ?? "");
-  const [overallBow, setOverallBow] = useState(() => draft?.overallBow ?? "");
-  const [fragmentation, setFragmentation] = useState(() => draft?.fragmentation ?? "");
-  const [stress, setStress] = useState(() => draft?.stress ?? "");
+  const [rollerwave, setRollerwave] = useState(() => draft?.rollerwaveInput ?? draft?.rollerwave ?? "");
+  const [edgeLift, setEdgeLift] = useState(() => draft?.edgeLiftInput ?? draft?.edgeLift ?? "");
+  const [overallBow, setOverallBow] = useState(() => draft?.overallBowInput ?? draft?.overallBow ?? "");
+  const [fragmentation, setFragmentation] = useState(() => draft?.fragmentationInput ?? draft?.fragmentation ?? "");
+  const [stress, setStress] = useState(() => draft?.stressInput ?? draft?.stress ?? "");
   const [handoverTo, setHandoverTo] = useState(() => draft?.handoverTo ?? "Lami");
   const [operator, setOperator] = useState(() => draft?.operator ?? "Maiku Lal");
   const [saveStatus, setSaveStatus] = useState({ type: "idle", message: "" });
 
   useEffect(() => {
-    const draft = {
+    const loadDataKey = `${category}-load-data`;
+    const loadedData = localStorage.getItem(loadDataKey);
+
+    if (!loadedData) return;
+
+    try {
+      const data = JSON.parse(loadedData);
+
+      setSfo(data.sfo || "");
+      setCustomer(data.customer || "");
+      setProject(data.project && data.project !== "â€”" ? data.project : "");
+      setWidth(Number(data.width) || 0);
+      setHeight(Number(data.height) || 0);
+      setSpecThickness(data.specThickness || "5mm");
+      setGlassType(data.glassType || "");
+      setGlassTemp(data.glassTemp || "HS");
+      setGlassProcessing(data.glassProcessing || "RG");
+      setZebra(data.zebra || "OK");
+      setRollerwave(data.rollerwaveInput || data.rollerwave || "");
+      setEdgeLift(data.edgeLiftInput || data.edgeLift || "");
+      setOverallBow(data.overallBowInput || data.overallBow || "");
+      setFragmentation(data.fragmentationInput || data.fragmentation || "");
+      setStress(data.stressInput || data.stress || "");
+      setHandoverTo(data.handoverTo || "Lami");
+      setOperator(data.operator || "Maiku Lal");
+    } catch (err) {
+      console.error("Failed to load measurement data:", err);
+    } finally {
+      localStorage.removeItem(loadDataKey);
+    }
+  }, [category]);
+
+  useEffect(() => {
+    const draftData = {
       sfo,
       customer,
       project,
@@ -49,26 +82,30 @@ export default function Temp({ category }) {
       glassProcessing,
       zebra,
       rollerwave,
+      rollerwaveInput: rollerwave,
       edgeLift,
+      edgeLiftInput: edgeLift,
       overallBow,
+      overallBowInput: overallBow,
       fragmentation,
+      fragmentationInput: fragmentation,
       stress,
+      stressInput: stress,
       handoverTo,
       operator,
     };
 
-    localStorage.setItem(draftKey, JSON.stringify(draft));
+    localStorage.setItem(draftKey, JSON.stringify(draftData));
   }, [draftKey, sfo, customer, project, width, height, specThickness, glassType, glassTemp, glassProcessing, zebra, rollerwave, edgeLift, overallBow, fragmentation, stress, handoverTo, operator]);
 
   const onSave = async () => {
     setSaveStatus({ type: "idle", message: "" });
 
-    // Validate required fields (project, stress, and fragmentation are optional)
     const requiredFields = {
       sfo: sfo.trim(),
       customer: customer.trim(),
-      width: width,
-      height: height,
+      width,
+      height,
       glassType: glassType.trim(),
       rollerwave: rollerwave.trim(),
       edgeLift: edgeLift.trim(),
@@ -87,11 +124,9 @@ export default function Temp({ category }) {
       return;
     }
 
-    // Format glass spec: "05mm clear hs rg" or "08mm st 167 tg cp"
     const thicknessNum = specThickness.replace("mm", "").padStart(2, "0");
     const spec = `${thicknessNum}mm ${glassType.toUpperCase()} ${glassTemp.toUpperCase()} ${glassProcessing.toUpperCase()}`;
 
-    // Convert rollerwave and edgeLift: 5 becomes 0.05, 10 becomes 0.10, etc.
     const convertValue = (val) => {
       const num = Number(val) || 0;
       return num === 0 ? "0" : (num / 100).toFixed(2);
@@ -101,16 +136,25 @@ export default function Temp({ category }) {
       time: new Date().toISOString(),
       sfo: sfo.trim(),
       customer: customer.trim(),
-      project: project.trim() ? project.trim() : "—",
-      width: `${Number(width)} mm`,
-      height: `${Number(height)} mm`,
+      project: project.trim() ? project.trim() : "â€”",
+      width: Number(width) || 0,
+      height: Number(height) || 0,
       spec,
+      specThickness,
+      glassType: glassType.trim(),
+      glassTemp,
+      glassProcessing,
       zebra,
       rollerwave: `${convertValue(rollerwave)} mm`,
+      rollerwaveInput: rollerwave.trim(),
       edgeLift: `${convertValue(edgeLift)} mm`,
+      edgeLiftInput: edgeLift.trim(),
       overallBow: `${overallBow.trim()} mm`,
-      fragmentation: fragmentation.trim() ? `${fragmentation.trim()} no's` : "—",
-      stress: stress.trim() ? `${stress.trim()} MPa` : "—",
+      overallBowInput: overallBow.trim(),
+      fragmentation: fragmentation.trim() ? `${fragmentation.trim()} no's` : "â€”",
+      fragmentationInput: fragmentation.trim(),
+      stress: stress.trim() ? `${stress.trim()} MPa` : "â€”",
+      stressInput: stress.trim(),
       handoverTo,
       operator,
     };
@@ -118,7 +162,6 @@ export default function Temp({ category }) {
     try {
       await addMeasurement(measurement, category);
       setSaveStatus({ type: "success", message: "Saved to IndexedDB." });
-      // Reset form
       setSfo("");
       setCustomer("");
       setProject("");
@@ -409,7 +452,6 @@ export default function Temp({ category }) {
           ) : null}
         </div>
       </div>
-      
     </>
   );
 }
