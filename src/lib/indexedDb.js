@@ -125,6 +125,35 @@ export async function clearAllMeasurements(category = null) {
   });
 }
 
+export async function deleteMeasurementsByIds(ids, category = null) {
+  if (!Array.isArray(ids) || ids.length === 0) return;
+
+  const db = await openDb();
+
+  return new Promise((resolve, reject) => {
+    const storeName = getStoreName(category);
+    const tx = db.transaction(storeName, "readwrite");
+    const store = tx.objectStore(storeName);
+
+    for (const id of ids) {
+      store.delete(id);
+    }
+
+    tx.oncomplete = () => {
+      db.close();
+      resolve();
+    };
+    tx.onerror = () => {
+      reject(tx.error);
+      db.close();
+    };
+    tx.onabort = () => {
+      reject(tx.error);
+      db.close();
+    };
+  });
+}
+
 export async function addMeasurement(measurement, category = null) {
   const db = await openDb();
 

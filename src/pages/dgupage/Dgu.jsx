@@ -1,6 +1,7 @@
 import "./style.css";
 import { useEffect, useState } from "react";
 import { addMeasurement } from "../../lib/indexedDb";
+import { copyMeasurementToClipboard } from "../../lib/measurementClipboard";
 
 const EMPTY_OPTIONAL_VALUE = "--";
 const EMPTY_DISPLAY_VALUES = new Set([EMPTY_OPTIONAL_VALUE, "—", "â€”", "Ã¢â‚¬â€"]);
@@ -197,7 +198,11 @@ export default function Dgu({ category }) {
 
     try {
       await addMeasurement(measurement, category);
-      setSaveStatus({ type: "success", message: "Saved to IndexedDB." });
+      const copied = await copyMeasurementToClipboard(measurement, category);
+      setSaveStatus({
+        type: "success",
+        message: copied ? "Saved to IndexedDB and copied to clipboard." : "Saved to IndexedDB. Copy failed.",
+      });
       // Reset form
       setSfo("");
       setCustomer("");
@@ -286,7 +291,7 @@ export default function Dgu({ category }) {
             type="text"
             placeholder=" "
             value={customer}
-            onChange={(e) => setCustomer(e.target.value)}
+            onChange={(e) => setCustomer(e.target.value.toUpperCase())}
             autoComplete="off"
           />
           <label htmlFor="field-customer" className="m3-outlined-text-field__label">
@@ -547,34 +552,52 @@ export default function Dgu({ category }) {
           </label>
         </div>
 
-        <div className="m3-outlined-text-field">
-          <input
-            id="field-base"
-            className="m3-outlined-text-field__input"
-            type="text"
-            placeholder=" "
-            value={base}
-            onChange={(e) => setBase(e.target.value)}
-            autoComplete="off"
-          />
-          <label htmlFor="field-base" className="m3-outlined-text-field__label">
-            Base (batch no)
-          </label>
+        <div className="m3-field-with-action">
+          <div className="m3-outlined-text-field">
+            <input
+              id="field-base"
+              className="m3-outlined-text-field__input"
+              type="text"
+              placeholder=" "
+              value={base}
+              onChange={(e) => setBase(e.target.value)}
+              autoComplete="off"
+            />
+            <label htmlFor="field-base" className="m3-outlined-text-field__label">
+              Base (batch no)
+            </label>
+          </div>
+          <button
+            type="button"
+            className="m3-button m3-field-with-action__button m3-field-with-action__button--base"
+            onClick={() => setBase("")}
+          >
+            New
+          </button>
         </div>
 
-        <div className="m3-outlined-text-field">
-          <input
-            id="field-catlist"
-            className="m3-outlined-text-field__input"
-            type="text"
-            placeholder=" "
-            value={catlist}
-            onChange={(e) => setCatlist(e.target.value)}
-            autoComplete="off"
-          />
-          <label htmlFor="field-catlist" className="m3-outlined-text-field__label">
-            Catlist (batch no)
-          </label>
+        <div className="m3-field-with-action">
+          <div className="m3-outlined-text-field">
+            <input
+              id="field-catlist"
+              className="m3-outlined-text-field__input"
+              type="text"
+              placeholder=" "
+              value={catlist}
+              onChange={(e) => setCatlist(e.target.value)}
+              autoComplete="off"
+            />
+            <label htmlFor="field-catlist" className="m3-outlined-text-field__label">
+              Catlist (batch no)
+            </label>
+          </div>
+          <button
+            type="button"
+            className="m3-button m3-field-with-action__button m3-field-with-action__button--catlist"
+            onClick={() => setCatlist("")}
+          >
+            New
+          </button>
         </div>
 
         <div className="m3-actions">

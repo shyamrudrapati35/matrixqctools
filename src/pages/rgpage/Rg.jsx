@@ -1,6 +1,7 @@
 import "./style.css";
 import { useEffect, useMemo, useState } from "react";
 import { addMeasurement } from "../../lib/indexedDb";
+import { copyMeasurementToClipboard } from "../../lib/measurementClipboard";
 
 export default function Set({ category }) {
   const draftKey = `rg-form-draft-${category || "rg"}`;
@@ -89,7 +90,11 @@ export default function Set({ category }) {
 
     try {
       await addMeasurement(measurement, selectedCategory);
-      setSaveStatus({ type: "success", message: "Saved to IndexedDB." });
+      const copied = await copyMeasurementToClipboard(measurement, selectedCategory);
+      setSaveStatus({
+        type: "success",
+        message: copied ? "Saved to IndexedDB and copied to clipboard." : "Saved to IndexedDB. Copy failed.",
+      });
       localStorage.setItem(draftKey, JSON.stringify(measurement));
     } catch (err) {
       setSaveStatus({

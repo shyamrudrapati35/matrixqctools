@@ -34,6 +34,27 @@
   margin-bottom: 8px;
 }
 
+.m3-field-with-action {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.m3-field-with-action .m3-outlined-text-field {
+  flex: 1;
+  min-width: 0;
+  margin-bottom: 0;
+}
+
+.m3-field-with-action__button {
+  flex: 0 0 auto;
+  height: 56px;
+  min-height: 56px;
+  margin: 0;
+}
+
 .m3-outlined-text-field__input {
   box-sizing: border-box;
   width: 100%;
@@ -238,6 +259,26 @@
   box-shadow:
     0 0 0 3px rgba(53, 94, 117, 0.35),
     0 1px 2px var(--md-sys-color-shadow);
+}
+
+.m3-field-with-action__button--base {
+  background-color: #ffffff;
+  color: #000000;
+  border: 1px solid #000000;
+}
+
+.m3-field-with-action__button--base:hover {
+  background-color: #f2f2f2;
+}
+
+.m3-field-with-action__button--catlist {
+  background-color: #000000;
+  color: #ffffff;
+  border: 1px solid #ffffff;
+}
+
+.m3-field-with-action__button--catlist:hover {
+  background-color: #242424;
 }
 
 .m3-button--full {

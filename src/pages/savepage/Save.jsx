@@ -1,7 +1,7 @@
 import "./style.css";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { clearAllMeasurements, listMeasurements } from "../../lib/indexedDb";
+import { deleteMeasurementsByIds, listMeasurements } from "../../lib/indexedDb";
 
 function formatTime12hr(isoString) {
   const d = new Date(isoString);
@@ -28,6 +28,17 @@ function isSameLocalDate(isoString, dateValue) {
   const d = new Date(isoString);
   if (Number.isNaN(d.getTime())) return false;
   return formatDateInputValue(d) === dateValue;
+}
+
+function formatSelectedDate(dateValue) {
+  const [year, month, day] = dateValue.split("-").map(Number);
+  const d = new Date(year, month - 1, day);
+  if (Number.isNaN(d.getTime())) return dateValue;
+  return new Intl.DateTimeFormat(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  }).format(d);
 }
 
 function sortOldestFirst(items) {
@@ -347,26 +358,29 @@ export default function Save({ category }) {
     };
   }, [category]);
 
+  const filteredItems = items.filter((m) => isSameLocalDate(m.time, selectedDate));
+
   const onDeleteAll = async () => {
-    if (items.length === 0) return;
+    if (filteredItems.length === 0) return;
+
+    const selectedDateLabel = formatSelectedDate(selectedDate);
     const ok = window.confirm(
-      `Delete all saved measurements for ${category?.toUpperCase() || "matrix-qc-rg"}? This cannot be undone.`,
+      `Delete all saved measurements for ${selectedDateLabel}? This cannot be undone.`,
     );
     if (!ok) return;
 
     setDeleting(true);
     setError("");
     try {
-      await clearAllMeasurements(category);
-      setItems([]);
+      const idsToDelete = filteredItems.map((item) => item.id);
+      await deleteMeasurementsByIds(idsToDelete, category);
+      setItems((currentItems) => currentItems.filter((item) => !idsToDelete.includes(item.id)));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not delete records.");
     } finally {
       setDeleting(false);
     }
   };
-
-  const filteredItems = items.filter((m) => isSameLocalDate(m.time, selectedDate));
 
   return (
     <div className="save-page-root">
@@ -393,7 +407,7 @@ export default function Save({ category }) {
           type="button"
           className="m3-save-delete-all"
           onClick={onDeleteAll}
-          disabled={loading || items.length === 0 || deleting}
+          disabled={loading || filteredItems.length === 0 || deleting}
         >
           {deleting ? "Deleting…" : "Delete all"}
         </button>

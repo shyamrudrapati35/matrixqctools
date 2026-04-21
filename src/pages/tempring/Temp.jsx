@@ -1,6 +1,7 @@
 import "./style.css";
 import { useEffect, useState } from "react";
 import { addMeasurement } from "../../lib/indexedDb";
+import { copyMeasurementToClipboard } from "../../lib/measurementClipboard";
 
 const EMPTY_OPTIONAL_VALUE = "--";
 const EMPTY_DISPLAY_VALUES = new Set([EMPTY_OPTIONAL_VALUE, "—", "â€”", "Ã¢â‚¬â€"]);
@@ -177,7 +178,11 @@ export default function Temp({ category }) {
 
     try {
       await addMeasurement(measurement, category);
-      setSaveStatus({ type: "success", message: "Saved to IndexedDB." });
+      const copied = await copyMeasurementToClipboard(measurement, category);
+      setSaveStatus({
+        type: "success",
+        message: copied ? "Saved to IndexedDB and copied to clipboard." : "Saved to IndexedDB. Copy failed.",
+      });
       setSfo("");
       setCustomer("");
       setProject("");
