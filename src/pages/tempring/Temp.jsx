@@ -2,6 +2,14 @@ import "./style.css";
 import { useEffect, useState } from "react";
 import { addMeasurement } from "../../lib/indexedDb";
 
+const EMPTY_OPTIONAL_VALUE = "--";
+const EMPTY_DISPLAY_VALUES = new Set([EMPTY_OPTIONAL_VALUE, "—", "â€”", "Ã¢â‚¬â€"]);
+
+function getOptionalInputValue(inputValue, displayValue) {
+  const value = inputValue || displayValue || "";
+  return EMPTY_DISPLAY_VALUES.has(value.trim()) ? "" : value;
+}
+
 export default function Temp({ category }) {
   const draftKey = `temp-form-draft-${category || "temp"}`;
   const loadDraft = () => {
@@ -19,7 +27,7 @@ export default function Temp({ category }) {
 
   const [sfo, setSfo] = useState(() => draft?.sfo ?? "");
   const [customer, setCustomer] = useState(() => draft?.customer ?? "");
-  const [project, setProject] = useState(() => draft?.project ?? "");
+  const [project, setProject] = useState(() => getOptionalInputValue("", draft?.project));
   const [width, setWidth] = useState(() => draft?.width ?? 0);
   const [height, setHeight] = useState(() => draft?.height ?? 0);
   const [specThickness, setSpecThickness] = useState(() => draft?.specThickness ?? "5mm");
@@ -30,8 +38,10 @@ export default function Temp({ category }) {
   const [rollerwave, setRollerwave] = useState(() => draft?.rollerwaveInput ?? draft?.rollerwave ?? "");
   const [edgeLift, setEdgeLift] = useState(() => draft?.edgeLiftInput ?? draft?.edgeLift ?? "");
   const [overallBow, setOverallBow] = useState(() => draft?.overallBowInput ?? draft?.overallBow ?? "");
-  const [fragmentation, setFragmentation] = useState(() => draft?.fragmentationInput ?? draft?.fragmentation ?? "");
-  const [stress, setStress] = useState(() => draft?.stressInput ?? draft?.stress ?? "");
+  const [fragmentation, setFragmentation] = useState(() =>
+    getOptionalInputValue(draft?.fragmentationInput, draft?.fragmentation)
+  );
+  const [stress, setStress] = useState(() => getOptionalInputValue(draft?.stressInput, draft?.stress));
   const [handoverTo, setHandoverTo] = useState(() => draft?.handoverTo ?? "Lami");
   const [operator, setOperator] = useState(() => draft?.operator ?? "Maiku Lal");
   const [saveStatus, setSaveStatus] = useState({ type: "idle", message: "" });
@@ -47,7 +57,7 @@ export default function Temp({ category }) {
 
       setSfo(data.sfo || "");
       setCustomer(data.customer || "");
-      setProject(data.project && data.project !== "â€”" ? data.project : "");
+      setProject(getOptionalInputValue("", data.project));
       setWidth(Number(data.width) || 0);
       setHeight(Number(data.height) || 0);
       setSpecThickness(data.specThickness || "5mm");
@@ -58,8 +68,8 @@ export default function Temp({ category }) {
       setRollerwave(data.rollerwaveInput || data.rollerwave || "");
       setEdgeLift(data.edgeLiftInput || data.edgeLift || "");
       setOverallBow(data.overallBowInput || data.overallBow || "");
-      setFragmentation(data.fragmentationInput || data.fragmentation || "");
-      setStress(data.stressInput || data.stress || "");
+      setFragmentation(getOptionalInputValue(data.fragmentationInput, data.fragmentation));
+      setStress(getOptionalInputValue(data.stressInput, data.stress));
       setHandoverTo(data.handoverTo || "Lami");
       setOperator(data.operator || "Maiku Lal");
     } catch (err) {
@@ -159,6 +169,12 @@ export default function Temp({ category }) {
       operator,
     };
 
+    measurement.fragmentation = fragmentation.trim()
+      ? `${fragmentation.trim()} no's`
+      : EMPTY_OPTIONAL_VALUE;
+    measurement.stress = stress.trim() ? `${stress.trim()} MPa` : EMPTY_OPTIONAL_VALUE;
+    measurement.project = project.trim() ? project.trim() : EMPTY_OPTIONAL_VALUE;
+
     try {
       await addMeasurement(measurement, category);
       setSaveStatus({ type: "success", message: "Saved to IndexedDB." });
@@ -188,9 +204,40 @@ export default function Temp({ category }) {
     }
   };
 
+  const onClear = () => {
+    setSfo("");
+    setCustomer("");
+    setProject("");
+    setWidth(0);
+    setHeight(0);
+    setSpecThickness("5mm");
+    setGlassType("");
+    setGlassTemp("HS");
+    setGlassProcessing("RG");
+    setZebra("OK");
+    setRollerwave("");
+    setEdgeLift("");
+    setOverallBow("");
+    setFragmentation("");
+    setStress("");
+    setHandoverTo("Lami");
+    setOperator("Maiku Lal");
+    setSaveStatus({ type: "idle", message: "" });
+    localStorage.removeItem(draftKey);
+  };
+
   return (
     <>
       <div className="set-page-root m3-form">
+        <div className="m3-actions m3-actions--top">
+          <button
+            type="button"
+            className="m3-button m3-button--filled m3-button--full"
+            onClick={onClear}
+          >
+            Clear
+          </button>
+        </div>
         <div className="m3-outlined-text-field">
           <input
             id="field-sfo"

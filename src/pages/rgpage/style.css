@@ -126,6 +126,11 @@
   margin-top: 8px;
 }
 
+.m3-actions--top {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
 .m3-status {
   margin-top: 8px;
   font-size: 0.875rem;

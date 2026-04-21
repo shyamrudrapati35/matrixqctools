@@ -17,6 +17,19 @@ function formatTime12hr(isoString) {
   }).format(d);
 }
 
+function formatDateInputValue(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function isSameLocalDate(isoString, dateValue) {
+  const d = new Date(isoString);
+  if (Number.isNaN(d.getTime())) return false;
+  return formatDateInputValue(d) === dateValue;
+}
+
 function sortOldestFirst(items) {
   return [...items].sort((a, b) => {
     const ta = new Date(a.time).getTime();
@@ -25,6 +38,25 @@ function sortOldestFirst(items) {
     const nb = Number.isNaN(tb) ? 0 : tb;
     return na - nb;
   });
+}
+
+const EMPTY_DISPLAY_VALUES = new Set(["--", "—", "â€”", "Ã¢â‚¬â€"]);
+
+function hasClipboardValue(value) {
+  if (value == null) return false;
+  const text = String(value).trim();
+  return text !== "" && !EMPTY_DISPLAY_VALUES.has(text);
+}
+
+function cleanClipboardText(text) {
+  return text
+    .split(/\n\s*\n/)
+    .filter((entry) => {
+      const separatorIndex = entry.indexOf(":");
+      if (separatorIndex === -1) return true;
+      return hasClipboardValue(entry.slice(separatorIndex + 1));
+    })
+    .join("\n\n");
 }
 
 function formatCardData(m, category) {
@@ -49,13 +81,13 @@ Edge Lift: ${m.edgeLift || "—"}
 
 Overall Bow: ${m.overallBow || "—"}`;
 
-    if (m.fragmentation && m.fragmentation !== "—") {
+    if (hasClipboardValue(m.fragmentation)) {
       tempData += `
 
 Fragmentation: ${m.fragmentation}`;
     }
 
-    if (m.stress && m.stress !== "—") {
+    if (hasClipboardValue(m.stress)) {
       tempData += `
 
 Stress: ${m.stress}`;
@@ -230,6 +262,7 @@ export default function Save({ category }) {
   const [error, setError] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(() => formatDateInputValue());
 
   function onLoadMeasurement(measurement) {
     const draftKey = getDraftStorageKey(category);
@@ -239,19 +272,21 @@ export default function Save({ category }) {
   }
 
   function copyToClipboard(text) {
+    const clipboardText = cleanClipboardText(text);
+
     // Try modern Clipboard API first
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(() => {
+      navigator.clipboard.writeText(clipboardText).then(() => {
         setCopySuccess(true);
         setTimeout(() => setCopySuccess(false), 2000);
       }).catch(err => {
         console.error('Failed to copy with Clipboard API: ', err);
         // Fallback to older method
-        fallbackCopyTextToClipboard(text);
+        fallbackCopyTextToClipboard(clipboardText);
       });
     } else {
       // Fallback for browsers that don't support Clipboard API
-      fallbackCopyTextToClipboard(text);
+      fallbackCopyTextToClipboard(clipboardText);
     }
   }
 
@@ -331,6 +366,8 @@ export default function Save({ category }) {
     }
   };
 
+  const filteredItems = items.filter((m) => isSameLocalDate(m.time, selectedDate));
+
   return (
     <div className="save-page-root">
       <h2 className="m3-save-list__title">Saved measurements</h2>
@@ -343,6 +380,15 @@ export default function Save({ category }) {
       )}
 
       <div className="m3-save-toolbar">
+        <label className="m3-save-date-field">
+          {/* <span className="m3-save-date-field__label">Date</span> */}
+          <input
+            type="date"
+            className="m3-save-date-field__input"
+            value={selectedDate}
+            onChange={(event) => setSelectedDate(event.target.value || formatDateInputValue())}
+          />
+        </label>
         <button
           type="button"
           className="m3-save-delete-all"
@@ -361,9 +407,11 @@ export default function Save({ category }) {
         </p>
       ) : items.length === 0 ? (
         <p className="m3-save-list__state">No records saved yet.</p>
+      ) : filteredItems.length === 0 ? (
+        <p className="m3-save-list__state">No records saved for this date.</p>
       ) : (
         <ul className="m3-card-list" aria-label="Saved measurements">
-          {items.map((m) => (
+          {filteredItems.map((m) => (
             <li key={m.id} className="m3-card">
               <div className="m3-card__header">
                 <p className="m3-card__time">{formatTime12hr(m.time)}</p>

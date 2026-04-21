@@ -2,6 +2,14 @@ import "./style.css";
 import { useEffect, useState } from "react";
 import { addMeasurement } from "../../lib/indexedDb";
 
+const EMPTY_OPTIONAL_VALUE = "--";
+const EMPTY_DISPLAY_VALUES = new Set([EMPTY_OPTIONAL_VALUE, "—", "â€”", "Ã¢â‚¬â€"]);
+
+function getOptionalInputValue(inputValue, displayValue) {
+  const value = inputValue || displayValue || "";
+  return EMPTY_DISPLAY_VALUES.has(value.trim()) ? "" : value;
+}
+
 export default function Dgu({ category }) {
   const draftKey = `dgu-form-draft-${category || "dgu"}`;
   const normalizeGlassType = (value) => (value || "").toUpperCase();
@@ -20,7 +28,7 @@ export default function Dgu({ category }) {
 
   const [sfo, setSfo] = useState(() => draft?.sfo ?? "");
   const [customer, setCustomer] = useState(() => draft?.customer ?? "");
-  const [project, setProject] = useState(() => draft?.project ?? "");
+  const [project, setProject] = useState(() => getOptionalInputValue("", draft?.project));
   const [glassType, setGlassType] = useState(() => draft?.glassType ?? "DGU");
   const [firstGlass, setFirstGlass] = useState(() => draft?.firstGlass ?? "");
   const [spacerThickness, setSpacerThickness] = useState(() => draft?.spacerThickness ?? "");
@@ -53,7 +61,7 @@ export default function Dgu({ category }) {
         
         setSfo(data.sfo || "");
         setCustomer(data.customer || "");
-        setProject(data.project && data.project !== "â€”" ? data.project : "");
+        setProject(getOptionalInputValue("", data.project));
         setGlassType(data.glassType || "DGU");
         setFirstGlass(data.firstGlass || "");
         setSpacerThickness(data.spacerThickness || "");
@@ -185,6 +193,8 @@ export default function Dgu({ category }) {
       catlist: catlist.trim(),
     };
 
+    measurement.project = project.trim() ? project.trim() : EMPTY_OPTIONAL_VALUE;
+
     try {
       await addMeasurement(measurement, category);
       setSaveStatus({ type: "success", message: "Saved to IndexedDB." });
@@ -216,9 +226,44 @@ export default function Dgu({ category }) {
     }
   };
 
+  const onClear = () => {
+    setSfo("");
+    setCustomer("");
+    setProject("");
+    setGlassType("DGU");
+    setFirstGlass("");
+    setSpacerThickness("");
+    setBite("");
+    setSecondGlass("");
+    setInterlayerType("");
+    setInterlayerThickness("");
+    setThirdGlass("");
+    setWidth(0);
+    setHeight(0);
+    setEdgeDeletion("");
+    setParallelism("");
+    setMeasuredSiliconeBite("");
+    setTotalBite("");
+    setMake("Silinde MF 882");
+    setDeltaT("");
+    setBase("");
+    setCatlist("");
+    setSaveStatus({ type: "idle", message: "" });
+    localStorage.removeItem(draftKey);
+  };
+
   return (
     <>
       <div className="set-page-root m3-form">
+        <div className="m3-actions m3-actions--top">
+          <button
+            type="button"
+            className="m3-button m3-button--filled m3-button--full"
+            onClick={onClear}
+          >
+            Clear
+          </button>
+        </div>
         <div className="m3-outlined-text-field">
           <input
             id="field-sfo"

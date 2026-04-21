@@ -99,9 +99,30 @@ export default function Set({ category }) {
     }
   };
 
+  const onClear = () => {
+    setSfo("");
+    setCustomer("");
+    setGlassType("");
+    setGlassThickness(4);
+    setGlassCategory(category?.trim().toLowerCase() === "cp" ? "cp" : "rg");
+    setWidth(0);
+    setHeight(0);
+    setSaveStatus({ type: "idle", message: "" });
+    localStorage.removeItem(draftKey);
+  };
+
   return (
     <>
       <div className="set-page-root m3-form">
+        <div className="m3-actions m3-actions--top">
+          <button
+            type="button"
+            className="m3-button m3-button--filled m3-button--full"
+            onClick={onClear}
+          >
+            Clear
+          </button>
+        </div>
         <div className="m3-outlined-text-field">
           <input
             id="field-sfo"
