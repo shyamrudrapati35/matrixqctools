@@ -1,8 +1,16 @@
 const DB_NAME = "sub-route-db";
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 const DEFAULT_CATEGORY = "rg";
 const CATEGORIES = ["wtr", "rg", "temp", "dgu"];
 const LEGACY_STORE_NAME = "measurements";
+const DGU_MATERIAL_STORES = {
+  "silinde mf 882": "dgu-material-silinde",
+  "silande mf 882": "dgu-material-silinde",
+  silinde: "dgu-material-silinde",
+  silande: "dgu-material-silinde",
+  "dowsil 982": "dgu-material-dowsil",
+  dowsil: "dgu-material-dowsil",
+};
 
 function getStoreName(category) {
   const normalized = typeof category === "string" && category.trim() !== ""
@@ -13,6 +21,15 @@ function getStoreName(category) {
 
 function getAllStoreNames() {
   return CATEGORIES.map(getStoreName);
+}
+
+function getDguMaterialStoreName(make) {
+  const normalizedMake = (make || "").trim().toLowerCase();
+  return DGU_MATERIAL_STORES[normalizedMake] || DGU_MATERIAL_STORES["silinde mf 882"];
+}
+
+function getAllDguMaterialStoreNames() {
+  return Object.values(DGU_MATERIAL_STORES);
 }
 
 function openDb() {
@@ -62,6 +79,17 @@ function openDb() {
 
       if (oldVersion < 3) {
         for (const storeName of getAllStoreNames()) {
+          if (!db.objectStoreNames.contains(storeName)) {
+            db.createObjectStore(storeName, {
+              keyPath: "id",
+              autoIncrement: true,
+            });
+          }
+        }
+      }
+
+      if (oldVersion < 4) {
+        for (const storeName of getAllDguMaterialStoreNames()) {
           if (!db.objectStoreNames.contains(storeName)) {
             db.createObjectStore(storeName, {
               keyPath: "id",
@@ -228,5 +256,72 @@ export async function listMeasurements(category = null) {
         db.close();
         reject(err);
       });
+  });
+}
+
+export async function saveDguMaterialBatch(make, values) {
+  const db = await openDb();
+
+  return new Promise((resolve, reject) => {
+    const storeName = getDguMaterialStoreName(make);
+    const tx = db.transaction(storeName, "readwrite");
+    const store = tx.objectStore(storeName);
+    const req = store.add({
+      time: new Date().toISOString(),
+      make: make || "Silinde MF 882",
+      base: values?.base?.trim?.() ?? "",
+      catlist: values?.catlist?.trim?.() ?? "",
+    });
+
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+
+    tx.oncomplete = () => db.close();
+    tx.onerror = () => {
+      reject(tx.error ?? req.error);
+      db.close();
+    };
+    tx.onabort = () => {
+      reject(tx.error ?? req.error);
+      db.close();
+    };
+  });
+}
+
+export async function getLatestDguMaterialBatch(make) {
+  const db = await openDb();
+
+  return new Promise((resolve, reject) => {
+    const storeName = getDguMaterialStoreName(make);
+    const tx = db.transaction(storeName, "readonly");
+    const store = tx.objectStore(storeName);
+    const req = store.getAll();
+
+    req.onsuccess = () => {
+      const rows = req.result ?? [];
+      if (rows.length === 0) {
+        resolve(null);
+        return;
+      }
+
+      const latest = [...rows].sort((a, b) => {
+        const timeA = new Date(a.time).getTime();
+        const timeB = new Date(b.time).getTime();
+        return (Number.isNaN(timeB) ? 0 : timeB) - (Number.isNaN(timeA) ? 0 : timeA);
+      })[0];
+
+      resolve(latest ?? null);
+    };
+    req.onerror = () => reject(req.error);
+
+    tx.oncomplete = () => db.close();
+    tx.onerror = () => {
+      reject(tx.error ?? req.error);
+      db.close();
+    };
+    tx.onabort = () => {
+      reject(tx.error ?? req.error);
+      db.close();
+    };
   });
 }

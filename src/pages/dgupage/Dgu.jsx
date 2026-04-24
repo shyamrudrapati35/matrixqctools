@@ -1,6 +1,6 @@
 import "./style.css";
 import { useEffect, useState } from "react";
-import { addMeasurement } from "../../lib/indexedDb";
+import { addMeasurement, getLatestDguMaterialBatch, saveDguMaterialBatch } from "../../lib/indexedDb";
 import { copyMeasurementToClipboard } from "../../lib/measurementClipboard";
 
 const EMPTY_OPTIONAL_VALUE = "--";
@@ -50,6 +50,10 @@ export default function Dgu({ category }) {
   const [catlist, setCatlist] = useState(() => draft?.catlist ?? "");
   const [saveStatus, setSaveStatus] = useState({ type: "idle", message: "" });
   const isLamiDgu = normalizeGlassType(glassType) === "LAMI+DGU";
+  const [shouldLoadLatestMaterialValues, setShouldLoadLatestMaterialValues] = useState(() => {
+    const hasDraftMaterialValues = Boolean((draft?.base ?? "").trim() || (draft?.catlist ?? "").trim());
+    return !hasDraftMaterialValues;
+  });
 
   // Load measurement data from save page
   useEffect(() => {
@@ -81,6 +85,7 @@ export default function Dgu({ category }) {
         setDeltaT(data.deltaTInput || data.deltaT || "");
         setBase(data.base || "");
         setCatlist(data.catlist || "");
+        setShouldLoadLatestMaterialValues(!(data.base || data.catlist));
         
       } catch (err) {
         console.error("Failed to load measurement data:", err);
@@ -117,6 +122,36 @@ export default function Dgu({ category }) {
 
     localStorage.setItem(draftKey, JSON.stringify(draft));
   }, [draftKey, sfo, customer, project, glassType, firstGlass, spacerThickness, bite, secondGlass, interlayerType, interlayerThickness, thirdGlass, width, height, edgeDeletion, parallelism, measuredSiliconeBite, totalBite, make, deltaT, base, catlist]);
+
+  useEffect(() => {
+    if (!shouldLoadLatestMaterialValues) return;
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const latestValues = await getLatestDguMaterialBatch(make);
+        if (cancelled) return;
+
+        if (!latestValues) {
+          setBase("");
+          setCatlist("");
+          return;
+        }
+
+        setBase(latestValues.base || "");
+        setCatlist(latestValues.catlist || "");
+      } catch (err) {
+        if (!cancelled) {
+          console.error("Failed to load latest DGU material values:", err);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [make, shouldLoadLatestMaterialValues]);
 
   const onSave = async () => {
     setSaveStatus({ type: "idle", message: "" });
@@ -198,6 +233,10 @@ export default function Dgu({ category }) {
 
     try {
       await addMeasurement(measurement, category);
+      await saveDguMaterialBatch(make, {
+        base: measurement.base,
+        catlist: measurement.catlist,
+      });
       const copied = await copyMeasurementToClipboard(measurement, category);
       setSaveStatus({
         type: "success",
@@ -222,6 +261,10 @@ export default function Dgu({ category }) {
       setMeasuredSiliconeBite("");
       setTotalBite("");
       setMake("Silinde MF 882");
+      setDeltaT("");
+      setBase("");
+      setCatlist("");
+      setShouldLoadLatestMaterialValues(true);
       localStorage.removeItem(draftKey);
     } catch (err) {
       setSaveStatus({
@@ -253,6 +296,7 @@ export default function Dgu({ category }) {
     setDeltaT("");
     setBase("");
     setCatlist("");
+    setShouldLoadLatestMaterialValues(true);
     setSaveStatus({ type: "idle", message: "" });
     localStorage.removeItem(draftKey);
   };
@@ -529,7 +573,10 @@ export default function Dgu({ category }) {
           <label className="m3-select-label">Make</label>
           <select
             value={make}
-            onChange={(e) => setMake(e.target.value)}
+            onChange={(e) => {
+              setMake(e.target.value);
+              setShouldLoadLatestMaterialValues(true);
+            }}
             className="m3-select-field"
           >
             <option value="Silinde MF 882">Silinde MF 882</option>
@@ -560,7 +607,10 @@ export default function Dgu({ category }) {
               type="text"
               placeholder=" "
               value={base}
-              onChange={(e) => setBase(e.target.value)}
+              onChange={(e) => {
+                setBase(e.target.value);
+                setShouldLoadLatestMaterialValues(false);
+              }}
               autoComplete="off"
             />
             <label htmlFor="field-base" className="m3-outlined-text-field__label">
@@ -570,7 +620,10 @@ export default function Dgu({ category }) {
           <button
             type="button"
             className="m3-button m3-field-with-action__button m3-field-with-action__button--base"
-            onClick={() => setBase("")}
+            onClick={() => {
+              setBase("");
+              setShouldLoadLatestMaterialValues(false);
+            }}
           >
             New
           </button>
@@ -584,7 +637,10 @@ export default function Dgu({ category }) {
               type="text"
               placeholder=" "
               value={catlist}
-              onChange={(e) => setCatlist(e.target.value)}
+              onChange={(e) => {
+                setCatlist(e.target.value);
+                setShouldLoadLatestMaterialValues(false);
+              }}
               autoComplete="off"
             />
             <label htmlFor="field-catlist" className="m3-outlined-text-field__label">
@@ -594,7 +650,10 @@ export default function Dgu({ category }) {
           <button
             type="button"
             className="m3-button m3-field-with-action__button m3-field-with-action__button--catlist"
-            onClick={() => setCatlist("")}
+            onClick={() => {
+              setCatlist("");
+              setShouldLoadLatestMaterialValues(false);
+            }}
           >
             New
           </button>
