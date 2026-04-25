@@ -70,6 +70,20 @@ function cleanClipboardText(text) {
     .join("\n\n");
 }
 
+function getSearchableText(m) {
+  return [
+    m.sfo,
+    m.customer,
+    m.project,
+    m.glassType,
+    m.spec,
+    ...Object.values(m),
+  ]
+    .filter((value) => value != null)
+    .map((value) => String(value).toLowerCase())
+    .join(" ");
+}
+
 function formatCardData(m, category) {
   if (category === "temp") {
     let tempData = `SFO: ${m.sfo || "—"}
@@ -274,6 +288,8 @@ export default function Save({ category }) {
   const [deleting, setDeleting] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [selectedDate, setSelectedDate] = useState(() => formatDateInputValue());
+  const [searchQuery, setSearchQuery] = useState("");
+  const [submittedSearchQuery, setSubmittedSearchQuery] = useState("");
 
   function onLoadMeasurement(measurement) {
     const draftKey = getDraftStorageKey(category);
@@ -358,10 +374,19 @@ export default function Save({ category }) {
     };
   }, [category]);
 
-  const filteredItems = items.filter((m) => isSameLocalDate(m.time, selectedDate));
+  const dateFilteredItems = items.filter((m) => isSameLocalDate(m.time, selectedDate));
+  const normalizedSearchQuery = submittedSearchQuery.trim().toLowerCase();
+  const isSearchActive = normalizedSearchQuery !== "";
+  const filteredItems = isSearchActive
+    ? items.filter((m) => getSearchableText(m).includes(normalizedSearchQuery))
+    : dateFilteredItems;
+
+  const onSearch = () => {
+    setSubmittedSearchQuery(searchQuery.trim());
+  };
 
   const onDeleteAll = async () => {
-    if (filteredItems.length === 0) return;
+    if (dateFilteredItems.length === 0) return;
 
     const selectedDateLabel = formatSelectedDate(selectedDate);
     const ok = window.confirm(
@@ -372,7 +397,7 @@ export default function Save({ category }) {
     setDeleting(true);
     setError("");
     try {
-      const idsToDelete = filteredItems.map((item) => item.id);
+      const idsToDelete = dateFilteredItems.map((item) => item.id);
       await deleteMeasurementsByIds(idsToDelete, category);
       setItems((currentItems) => currentItems.filter((item) => !idsToDelete.includes(item.id)));
     } catch (err) {
@@ -403,11 +428,40 @@ export default function Save({ category }) {
             onChange={(event) => setSelectedDate(event.target.value || formatDateInputValue())}
           />
         </label>
+        <label className="m3-save-search-field">
+          <input
+            type="search"
+            className="m3-save-search-field__input"
+            value={searchQuery}
+            onChange={(event) => {
+              const nextValue = event.target.value;
+              setSearchQuery(nextValue);
+              if (nextValue.trim() === "") {
+                setSubmittedSearchQuery("");
+              }
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                onSearch();
+              }
+            }}
+            placeholder="Search SFO, project, customer, glass"
+            aria-label="Search saved measurements"
+          />
+        </label>
+        <button
+          type="button"
+          className="m3-save-search-btn"
+          onClick={onSearch}
+          disabled={loading || searchQuery.trim() === ""}
+        >
+          Search
+        </button>
         <button
           type="button"
           className="m3-save-delete-all"
           onClick={onDeleteAll}
-          disabled={loading || filteredItems.length === 0 || deleting}
+          disabled={loading || dateFilteredItems.length === 0 || deleting}
         >
           {deleting ? "Deleting…" : "Delete all"}
         </button>
@@ -421,8 +475,10 @@ export default function Save({ category }) {
         </p>
       ) : items.length === 0 ? (
         <p className="m3-save-list__state">No records saved yet.</p>
-      ) : filteredItems.length === 0 ? (
+      ) : !isSearchActive && dateFilteredItems.length === 0 ? (
         <p className="m3-save-list__state">No records saved for this date.</p>
+      ) : filteredItems.length === 0 ? (
+        <p className="m3-save-list__state">No matching records for this search.</p>
       ) : (
         <ul className="m3-card-list" aria-label="Saved measurements">
           {filteredItems.map((m) => (
