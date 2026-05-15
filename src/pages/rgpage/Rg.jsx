@@ -20,6 +20,7 @@ export default function Set({ category }) {
 
   const [sfo, setSfo] = useState(() => draft?.sfo ?? "");
   const [customer, setCustomer] = useState(() => draft?.customer ?? "");
+  const [standerd, setStanderd] = useState(() => draft?.standerd ?? "");
   const [glassType, setGlassType] = useState(() => draft?.glassType ?? "");
   const [glassThickness, setGlassThickness] = useState(() => draft?.glassThickness ?? 4);
   const [glassCategory, setGlassCategory] = useState(
@@ -42,6 +43,7 @@ export default function Set({ category }) {
     const draftData = {
       sfo,
       customer,
+      standerd,
       glassType,
       glassThickness,
       glassCategory,
@@ -50,7 +52,7 @@ export default function Set({ category }) {
     };
 
     localStorage.setItem(draftKey, JSON.stringify(draftData));
-  }, [draftKey, sfo, customer, glassType, glassThickness, glassCategory, width, height]);
+  }, [draftKey, sfo, customer, standerd, glassType, glassThickness, glassCategory, width, height]);
 
   const onSave = async () => {
     setSaveStatus({ type: "idle", message: "" });
@@ -80,6 +82,7 @@ export default function Set({ category }) {
       time: new Date().toISOString(),
       sfo: sfo.trim(),
       customer: customer.trim(),
+      standerd: standerd.trim(),
       glassType: glassType.trim(),
       glassThickness: Number.isFinite(t) ? t : null,
       glassCategory: selectedCategory,
@@ -107,6 +110,7 @@ export default function Set({ category }) {
   const onClear = () => {
     setSfo("");
     setCustomer("");
+    setStanderd("");
     setGlassType("");
     setGlassThickness(4);
     setGlassCategory(category?.trim().toLowerCase() === "cp" ? "cp" : "rg");
@@ -157,6 +161,23 @@ export default function Set({ category }) {
             className="m3-outlined-text-field__label"
           >
             Customer
+          </label>
+        </div>
+        <div className="m3-outlined-text-field">
+          <input
+            id="field-standerd"
+            className="m3-outlined-text-field__input"
+            type="text"
+            placeholder=" "
+            value={standerd}
+            onChange={(e) => setStanderd(e.target.value)}
+            autoComplete="off"
+          />
+          <label
+            htmlFor="field-standerd"
+            className="m3-outlined-text-field__label"
+          >
+            Standerd
           </label>
         </div>
         <div className="m3-outlined-text-field">

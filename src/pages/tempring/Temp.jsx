@@ -29,6 +29,7 @@ export default function Temp({ category }) {
   const [sfo, setSfo] = useState(() => draft?.sfo ?? "");
   const [customer, setCustomer] = useState(() => draft?.customer ?? "");
   const [project, setProject] = useState(() => getOptionalInputValue("", draft?.project));
+  const [standerd, setStanderd] = useState(() => draft?.standerd ?? "");
   const [width, setWidth] = useState(() => draft?.width ?? 0);
   const [height, setHeight] = useState(() => draft?.height ?? 0);
   const [specThickness, setSpecThickness] = useState(() => draft?.specThickness ?? "5mm");
@@ -59,6 +60,7 @@ export default function Temp({ category }) {
       setSfo(data.sfo || "");
       setCustomer(data.customer || "");
       setProject(getOptionalInputValue("", data.project));
+      setStanderd(data.standerd || "");
       setWidth(Number(data.width) || 0);
       setHeight(Number(data.height) || 0);
       setSpecThickness(data.specThickness || "5mm");
@@ -85,6 +87,7 @@ export default function Temp({ category }) {
       sfo,
       customer,
       project,
+      standerd,
       width,
       height,
       specThickness,
@@ -107,7 +110,7 @@ export default function Temp({ category }) {
     };
 
     localStorage.setItem(draftKey, JSON.stringify(draftData));
-  }, [draftKey, sfo, customer, project, width, height, specThickness, glassType, glassTemp, glassProcessing, zebra, rollerwave, edgeLift, overallBow, fragmentation, stress, handoverTo, operator]);
+  }, [draftKey, sfo, customer, project, standerd, width, height, specThickness, glassType, glassTemp, glassProcessing, zebra, rollerwave, edgeLift, overallBow, fragmentation, stress, handoverTo, operator]);
 
   const onSave = async () => {
     setSaveStatus({ type: "idle", message: "" });
@@ -148,6 +151,7 @@ export default function Temp({ category }) {
       sfo: sfo.trim(),
       customer: customer.trim(),
       project: project.trim() ? project.trim() : "â€”",
+      standerd: standerd.trim(),
       width: Number(width) || 0,
       height: Number(height) || 0,
       spec,
@@ -186,6 +190,7 @@ export default function Temp({ category }) {
       setSfo("");
       setCustomer("");
       setProject("");
+      setStanderd("");
       setWidth(0);
       setHeight(0);
       setSpecThickness("5mm");
@@ -213,6 +218,7 @@ export default function Temp({ category }) {
     setSfo("");
     setCustomer("");
     setProject("");
+    setStanderd("");
     setWidth(0);
     setHeight(0);
     setSpecThickness("5mm");
@@ -280,11 +286,26 @@ export default function Temp({ category }) {
             type="text"
             placeholder=" "
             value={project}
-            onChange={(e) => setProject(e.target.value)}
+            onChange={(e) => setProject(e.target.value.toUpperCase())}
             autoComplete="off"
           />
           <label htmlFor="field-project" className="m3-outlined-text-field__label">
             Project
+          </label>
+        </div>
+
+        <div className="m3-outlined-text-field">
+          <input
+            id="field-standerd"
+            className="m3-outlined-text-field__input"
+            type="text"
+            placeholder=" "
+            value={standerd}
+            onChange={(e) => setStanderd(e.target.value.toUpperCase())}
+            autoComplete="off"
+          />
+          <label htmlFor="field-standerd" className="m3-outlined-text-field__label">
+            Standerd
           </label>
         </div>
 

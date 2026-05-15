@@ -2,6 +2,7 @@ import "./style.css";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { deleteMeasurementsByIds, listMeasurements } from "../../lib/indexedDb";
+import { formatMeasurementForClipboard } from "../../lib/measurementClipboard";
 
 function formatTime12hr(isoString) {
   const d = new Date(isoString);
@@ -86,80 +87,16 @@ function getSearchableText(m) {
 
 function formatCardData(m, category) {
   if (category === "temp") {
-    let tempData = `SFO: ${m.sfo || "—"}
-
-Customer: ${m.customer || "—"}
-
-Project: ${m.project || "—"}
-
-Width: ${m.width || "—"}
-
-Height: ${m.height || "—"}
-
-Spec: ${m.spec || "—"}
-
-Zebra: ${m.zebra || "—"}
-
-Rollerwave: ${m.rollerwave || "—"}
-
-Edge Lift: ${m.edgeLift || "—"}
-
-Overall Bow: ${m.overallBow || "—"}`;
-
-    if (hasClipboardValue(m.fragmentation)) {
-      tempData += `
-
-Fragmentation: ${m.fragmentation}`;
-    }
-
-    if (hasClipboardValue(m.stress)) {
-      tempData += `
-
-Stress: ${m.stress}`;
-    }
-
-    tempData += `
-
-Handover To: ${m.handoverTo || "—"}
-
-Operator: ${m.operator || "—"}`;
-
-    return tempData;
+    return formatMeasurementForClipboard(m, category);
   } else if (category === "dgu") {
-    return `SFO: ${m.sfo || "—"}
-
-Customer: ${m.customer || "—"}
-
-Project: ${m.project || "—"}
-
-Glass Type: ${m.glassType || "—"}
-
-Spec: ${m.spec || "—"}
-
-Width: ${m.width || "—"}
-
-Height: ${m.height || "—"}
-
-Edge Deletion: ${m.edgeDeletion || "—"}
-
-Parallelism: ${m.parallelism || "—"}
-
-Measured Silicone Bite: ${m.measuredSiliconeBite || "—"}
-
-Total Bite: ${m.totalBite || "—"}
-
-Make: ${m.make || "—"}
-
-Delta T: ${m.deltaT || "—"}
-
-Base (batch no): ${m.base || "—"}
-
-Catalist (batch no): ${m.catlist || "—"}`;
+    return formatMeasurementForClipboard(m, category);
   }
   // Default RG / CP format
   return `SFO: ${m.sfo || "—"}
 
 Customer: ${m.customer || "—"}
+
+Standerd: ${m.standerd || "—"}
 
 Glass Type: ${m.glassType || "—"}
 
@@ -182,6 +119,8 @@ function renderCardRows(m, category) {
         <span className="m3-card__value">{m.customer || "—"}</span>
         <span className="m3-card__label">Project</span>
         <span className="m3-card__value">{m.project || "—"}</span>
+        <span className="m3-card__label">Standerd</span>
+        <span className="m3-card__value">{m.standerd || "—"}</span>
         <span className="m3-card__label">Width</span>
         <span className="m3-card__value">{m.width || "—"}</span>
         <span className="m3-card__label">Height</span>
@@ -215,6 +154,8 @@ function renderCardRows(m, category) {
         <span className="m3-card__value">{m.customer || "—"}</span>
         <span className="m3-card__label">Project</span>
         <span className="m3-card__value">{m.project || "—"}</span>
+        <span className="m3-card__label">Standerd</span>
+        <span className="m3-card__value">{m.standerd || "—"}</span>
         <span className="m3-card__label">Glass Type</span>
         <span className="m3-card__value">{m.glassType || "—"}</span>
         <span className="m3-card__label">Spec</span>
@@ -249,6 +190,8 @@ function renderCardRows(m, category) {
       <span className="m3-card__value">{m.sfo || "—"}</span>
       <span className="m3-card__label">Customer</span>
       <span className="m3-card__value">{m.customer || "—"}</span>
+      <span className="m3-card__label">Standerd</span>
+      <span className="m3-card__value">{m.standerd || "—"}</span>
       <span className="m3-card__label">Glass Type</span>
       <span className="m3-card__value">{m.glassType || "—"}</span>
       <span className="m3-card__label">Glass thickness</span>

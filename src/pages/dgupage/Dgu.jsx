@@ -30,6 +30,7 @@ export default function Dgu({ category }) {
   const [sfo, setSfo] = useState(() => draft?.sfo ?? "");
   const [customer, setCustomer] = useState(() => draft?.customer ?? "");
   const [project, setProject] = useState(() => getOptionalInputValue("", draft?.project));
+  const [standerd, setStanderd] = useState(() => draft?.standerd ?? "");
   const [glassType, setGlassType] = useState(() => draft?.glassType ?? "DGU");
   const [firstGlass, setFirstGlass] = useState(() => draft?.firstGlass ?? "");
   const [spacerThickness, setSpacerThickness] = useState(() => draft?.spacerThickness ?? "");
@@ -67,6 +68,7 @@ export default function Dgu({ category }) {
         setSfo(data.sfo || "");
         setCustomer(data.customer || "");
         setProject(getOptionalInputValue("", data.project));
+        setStanderd(data.standerd || "");
         setGlassType(data.glassType || "DGU");
         setFirstGlass(data.firstGlass || "");
         setSpacerThickness(data.spacerThickness || "");
@@ -100,6 +102,7 @@ export default function Dgu({ category }) {
       sfo,
       customer,
       project,
+      standerd,
       glassType,
       firstGlass,
       spacerThickness,
@@ -121,7 +124,7 @@ export default function Dgu({ category }) {
     };
 
     localStorage.setItem(draftKey, JSON.stringify(draft));
-  }, [draftKey, sfo, customer, project, glassType, firstGlass, spacerThickness, bite, secondGlass, interlayerType, interlayerThickness, thirdGlass, width, height, edgeDeletion, parallelism, measuredSiliconeBite, totalBite, make, deltaT, base, catlist]);
+  }, [draftKey, sfo, customer, project, standerd, glassType, firstGlass, spacerThickness, bite, secondGlass, interlayerType, interlayerThickness, thirdGlass, width, height, edgeDeletion, parallelism, measuredSiliconeBite, totalBite, make, deltaT, base, catlist]);
 
   useEffect(() => {
     if (!shouldLoadLatestMaterialValues) return;
@@ -237,7 +240,10 @@ export default function Dgu({ category }) {
         base: measurement.base,
         catlist: measurement.catlist,
       });
-      const copied = await copyMeasurementToClipboard(measurement, category);
+      const copied = await copyMeasurementToClipboard(
+        { ...measurement, standerd: standerd.trim() },
+        category,
+      );
       setSaveStatus({
         type: "success",
         message: copied ? "Saved to IndexedDB and copied to clipboard." : "Saved to IndexedDB. Copy failed.",
@@ -246,6 +252,7 @@ export default function Dgu({ category }) {
       setSfo("");
       setCustomer("");
       setProject("");
+      setStanderd("");
       setGlassType("DGU");
       setFirstGlass("");
       setSpacerThickness("");
@@ -278,6 +285,7 @@ export default function Dgu({ category }) {
     setSfo("");
     setCustomer("");
     setProject("");
+    setStanderd("");
     setGlassType("DGU");
     setFirstGlass("");
     setSpacerThickness("");
@@ -355,6 +363,21 @@ export default function Dgu({ category }) {
           />
           <label htmlFor="field-project" className="m3-outlined-text-field__label">
             Project
+          </label>
+        </div>
+
+        <div className="m3-outlined-text-field">
+          <input
+            id="field-standerd"
+            className="m3-outlined-text-field__input"
+            type="text"
+            placeholder=" "
+            value={standerd}
+            onChange={(e) => setStanderd(e.target.value.toUpperCase())}
+            autoComplete="off"
+          />
+          <label htmlFor="field-standerd" className="m3-outlined-text-field__label">
+            Standerd
           </label>
         </div>
 

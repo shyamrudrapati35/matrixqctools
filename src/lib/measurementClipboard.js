@@ -17,51 +17,69 @@ function cleanClipboardText(text) {
     .join("\n\n");
 }
 
+function getDisplayValue(value) {
+  return hasClipboardValue(value) ? String(value).trim() : "—";
+}
+
+function stripDisplayUnit(value, unitPattern) {
+  return getDisplayValue(value).replace(unitPattern, "").trim();
+}
+
 export function formatMeasurementForClipboard(m, category) {
   if (category === "temp") {
-    let tempData = `SFO: ${m.sfo || "—"}
+    const width = getDisplayValue(m.width);
+    const height = getDisplayValue(m.height);
+    const rollerwave = stripDisplayUnit(m.rollerwave || m.rollerwaveInput, /\s*mm$/i);
+    const edgeLift = stripDisplayUnit(m.edgeLift || m.edgeLiftInput, /\s*mm$/i);
+    const overallBow = stripDisplayUnit(m.overallBow || m.overallBowInput, /\s*mm$/i);
+    const glassTemp = String(m.glassTemp || "").toUpperCase();
+    const isTg = glassTemp === "TG";
+    const rollerwaveLimit = isTg ? "0.20mm" : "0.15mm";
+    const widthLine = isTg || width === "—" ? width : `${width}mm / ±2mm`;
+    const heightLine = isTg || height === "—" ? height : `${height}mm / ±2mm`;
+
+    return `Standard: ${getDisplayValue(m.standerd)}
+
+SFO: ${m.sfo || "—"}
 
 Customer: ${m.customer || "—"}
 
 Project: ${m.project || "—"}
 
-Width: ${m.width || "—"}
+Width: ${widthLine}
 
-Height: ${m.height || "—"}
+Height: ${heightLine}
 
 Spec: ${m.spec || "—"}
 
 Zebra: ${m.zebra || "—"}
 
-Rollerwave: ${m.rollerwave || "—"}
+Rollerwave: ${rollerwave === "—" ? rollerwave : `${rollerwave} mm / ${rollerwaveLimit}`}
 
-Edge Lift: ${m.edgeLift || "—"}
+Edge Lift: ${edgeLift === "—" ? edgeLift : `${edgeLift} mm / 0.25mm`}
 
-Overall Bow: ${m.overallBow || "—"}`;
-
-    if (hasClipboardValue(m.fragmentation)) {
-      tempData += `
-
-Fragmentation: ${m.fragmentation}`;
-    }
-
-    if (hasClipboardValue(m.stress)) {
-      tempData += `
-
-Stress: ${m.stress}`;
-    }
-
-    tempData += `
+Overall Bow: ${overallBow === "—" ? overallBow : `${overallBow} mm / 1.5mm/mtr`}
 
 Handover To: ${m.handoverTo || "—"}
 
 Operator: ${m.operator || "—"}`;
-
-    return tempData;
   }
 
   if (category === "dgu") {
-    return `SFO: ${m.sfo || "—"}
+    const width = getDisplayValue(m.width);
+    const height = getDisplayValue(m.height);
+    const edgeDeletion = stripDisplayUnit(m.edgeDeletionInput || m.edgeDeletion, /\s*mm$/i);
+    const parallelism = stripDisplayUnit(m.parallelismInput || m.parallelism, /\s*mm$/i);
+    const measuredSiliconeBite = stripDisplayUnit(
+      m.measuredSiliconeBiteInput || m.measuredSiliconeBite,
+      /\s*mm$/i,
+    );
+    const totalBite = stripDisplayUnit(m.totalBiteInput || m.totalBite, /\s*mm$/i);
+    const deltaT = stripDisplayUnit(m.deltaTInput || m.deltaT, /\s*(°C|Â°C)$/i);
+
+    return `Standard: ${getDisplayValue(m.standerd)}
+
+SFO: ${m.sfo || "—"}
 
 Customer: ${m.customer || "—"}
 
@@ -71,21 +89,21 @@ Glass Type: ${m.glassType || "—"}
 
 Spec: ${m.spec || "—"}
 
-Width: ${m.width || "—"}
+Width: ${width === "—" ? width : `${width}mm / ±2mm`}
 
-Height: ${m.height || "—"}
+Height: ${height === "—" ? height : `${height}mm / ±2mm`}
 
-Edge Deletion: ${m.edgeDeletion || "—"}
+Edge Deletion: ${edgeDeletion === "—" ? edgeDeletion : `${edgeDeletion} mm`}
 
-Parallelism: ${m.parallelism || "—"}
+Parallelism: ${parallelism === "—" ? parallelism : `${parallelism} mm / ±1.5mm`}
 
-Measured Silicone Bite: ${m.measuredSiliconeBite || "—"}
+Measured Silicone Bite: ${measuredSiliconeBite === "—" ? measuredSiliconeBite : `${measuredSiliconeBite} mm`}
 
-Total Bite: ${m.totalBite || "—"}
+Total Bite: ${totalBite === "—" ? totalBite : `${totalBite}mm`}
 
 Make: ${m.make || "—"}
 
-Delta T: ${m.deltaT || "—"}
+Delta T: ${deltaT === "—" ? deltaT : `${deltaT}°C / >32°C`}
 
 Base (batch no): ${m.base || "—"}
 
@@ -95,6 +113,8 @@ Catalist (batch no): ${m.catlist || "—"}`;
   return `SFO: ${m.sfo || "—"}
 
 Customer: ${m.customer || "—"}
+
+Standerd: ${m.standerd || "—"}
 
 Glass Type: ${m.glassType || "—"}
 
