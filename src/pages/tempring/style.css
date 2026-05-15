@@ -278,3 +278,163 @@
   opacity: 0.55;
   box-shadow: none;
 }
+
+/* Neobrutalist overrides */
+.set-page-root {
+  --nb-white: #fff;
+  --nb-black: #000;
+  --nb-gray: #f3f3f3;
+  color: var(--nb-black);
+}
+
+.m3-form {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.m3-outlined-text-field,
+.m3-select-group {
+  margin-bottom: 14px;
+}
+
+.m3-outlined-text-field__input,
+.m3-select-field {
+  min-height: 50px;
+  padding: 14px 12px;
+  border: 2px solid var(--nb-black);
+  border-radius: 0;
+  background-color: var(--nb-white);
+  color: var(--nb-black);
+  box-shadow: 3px 3px 0 var(--nb-black);
+  caret-color: var(--nb-black);
+  font-weight: 700;
+  letter-spacing: 0;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
+}
+
+.m3-select-field {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='square' stroke-linejoin='miter'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  padding-right: 40px;
+}
+
+.m3-outlined-text-field__input:hover,
+.m3-outlined-text-field__input:focus,
+.m3-select-field:hover,
+.m3-select-field:focus {
+  border-color: var(--nb-black);
+  background-color: var(--nb-gray);
+  box-shadow: 2px 2px 0 var(--nb-black);
+}
+
+.m3-outlined-text-field__input:focus,
+.m3-select-field:focus {
+  outline: 3px solid var(--nb-black);
+  outline-offset: 3px;
+}
+
+.m3-outlined-text-field__input--readonly {
+  background-color: var(--nb-gray);
+  color: var(--nb-black);
+}
+
+.m3-outlined-text-field__label,
+.m3-select-label {
+  background-color: var(--nb-white);
+  color: var(--nb-black);
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.m3-outlined-text-field__input:focus ~ .m3-outlined-text-field__label,
+.m3-outlined-text-field__input:not(:focus):not(:placeholder-shown) ~ .m3-outlined-text-field__label {
+  color: var(--nb-black);
+}
+
+.m3-status {
+  color: var(--nb-black);
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.m3-status--success,
+.m3-status--error {
+  color: var(--nb-black);
+}
+
+.m3-button {
+  min-height: 40px;
+  border: 2px solid var(--nb-black);
+  border-radius: 0;
+  background: var(--nb-white);
+  color: var(--nb-black);
+  box-shadow: 3px 3px 0 var(--nb-black);
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  overflow: visible;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
+}
+
+.m3-button:focus-visible {
+  outline: 3px solid var(--nb-black);
+  outline-offset: 3px;
+  box-shadow: 3px 3px 0 var(--nb-black);
+}
+
+.m3-button--filled {
+  background-color: var(--nb-black);
+  color: var(--nb-white);
+  box-shadow: 3px 3px 0 var(--nb-black);
+}
+
+.m3-button--filled::before {
+  display: none;
+}
+
+.m3-button:hover:not(:disabled) {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0 var(--nb-black);
+  filter: none;
+}
+
+.m3-button--filled:hover:not(:disabled) {
+  background-color: var(--nb-black);
+}
+
+.m3-button:disabled,
+.m3-button[disabled] {
+  opacity: 0.45;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Flat neobrutalist refinement */
+.m3-outlined-text-field__input,
+.m3-select-field,
+.m3-button,
+.m3-button--filled {
+  box-shadow: none;
+}
+
+.m3-outlined-text-field__input,
+.m3-select-field,
+.m3-button {
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.m3-outlined-text-field__input:hover,
+.m3-outlined-text-field__input:focus,
+.m3-select-field:hover,
+.m3-select-field:focus {
+  box-shadow: none;
+}
+
+.m3-button:focus-visible {
+  box-shadow: none;
+}
+
+.m3-button:hover:not(:disabled) {
+  transform: none;
+  box-shadow: none;
+}

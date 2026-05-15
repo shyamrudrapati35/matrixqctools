@@ -2,7 +2,7 @@
     margin: 0;
     padding: 0;
     /*border: 1px solid black;*/
-    color: #213c51;
+    color: #000;
 }
 
 .main_page_layout {
@@ -13,20 +13,23 @@
     grid-column-gap: 8px;
     grid-row-gap: 8px;
 
-    /*dotted background*/
-    background-color: white;
-    background-image: radial-gradient(gray 1px, transparent 1px);
+    /* flat neobrutalist dotted background */
+    background-color: #fff;
+    background-image: radial-gradient(#000 1px, transparent 1px);
     background-size: 20px 20px;
 }
 
 .main_page {
     grid-area: 2 / 1 / 12 / 13;
-    background-color: #f2eae0;
+    background-color: #fff;
     margin: 10px;
-    border-radius: 10px;
-    box-shadow: 2px 2px 2px #1b1f1b;
+    border: 3px solid #000;
+    border-radius: 0;
+    box-shadow: none;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    padding-bottom: 3px;
+    padding-top: 10px;
 }
